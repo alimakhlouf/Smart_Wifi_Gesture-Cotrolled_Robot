@@ -53,11 +53,11 @@
 2. 16x2 LCD (hd44780) with a serial access using SIPO shift register IC (74hc595). 
 3. WIFI module(ESP8266).
 4. CAN Controller Module(mcp2515).
-5. motor drive IC (L292d).
-6. ultrasonic sensor (hc-sr04) for detecting obstacles.
+5. Motor Drive IC (L292d).
+6. Ultrasonic sensor (hc-sr04) for detecting obstacles.
 7. Gas sensor (MQ-2). 
-8. temperature and humidity sensor (DHT11).
-
+8. Temperature and Humidity sensor (DHT11).
+9. 3-Axis Gyro+Accelerometer Sensor (MPU-6050) for detecting and movements
 
 
 ### Software Specifications:
