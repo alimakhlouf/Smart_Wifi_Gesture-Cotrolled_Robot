@@ -5,13 +5,13 @@
 
 **2- it can read Temperature, Humidity Percentage and Smoke Concentration and upload these information  on a website that can be accessed by anyone.**
 
-**3- It can also upload these information to an LCD screen placed on your hand if you ask for it using some buttons provided by the circuit placed on your gloves.**
+**3- It can also upload these information to an LCD screen placed on your hand if you requested it.**
 
-**4- you can Robot WIFI options with your mobile using Bluetooth.**
+**4- you can adjust Robot WIFI options with your mobile using Bluetooth.**
 
 **5- detects if the Robot is facing an obstacle and if so it stops and informs both the user and the webpage.**
 
-**6- .The Robot consists of 2 ECUs that communicate with each other using CAN Protocol.** 
+**6- The Robot body consists of 2 ECUs that communicate with each other using CAN Protocol.** 
 
 
 
@@ -60,17 +60,4 @@
 9. 3-Axis Gyro+Accelerometer Sensor (MPU-6050) for detecting and movements
 
 
-### Software Specifications:
-
-//fill this part after finishing programming to not apply changes repeatedly.    
-
-Software Architecture is as follows
-
-//here I am supposed to upload the SW architecture picture 
-
-the following SW modules are
-
-//here I am supposed to write the SW modules used 
-
-Here I am suppose to write the Software Architecture.
 
