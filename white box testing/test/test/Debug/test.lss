@@ -1,0 +1,173 @@
+
+test.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         000000de  00000000  00000000  00000054  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00800060  00000132  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .comment      00000030  00000000  00000000  00000132  2**0
+                  CONTENTS, READONLY
+  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000164  2**2
+                  CONTENTS, READONLY
+  4 .debug_aranges 00000090  00000000  00000000  000001a0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_info   00000735  00000000  00000000  00000230  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_abbrev 000002f0  00000000  00000000  00000965  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_line   00000335  00000000  00000000  00000c55  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_frame  0000020c  00000000  00000000  00000f8c  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_str    0000031d  00000000  00000000  00001198  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_loc    00000888  00000000  00000000  000014b5  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_ranges 00000070  00000000  00000000  00001d3d  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 2a 00 	jmp	0x54	; 0x54 <__ctors_end>
+   4:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+   8:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+   c:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  10:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  14:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  18:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  1c:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  20:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  24:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  28:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  2c:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  30:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  34:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  38:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  3c:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  40:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  44:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  48:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  4c:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  50:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+
+00000054 <__ctors_end>:
+  54:	11 24       	eor	r1, r1
+  56:	1f be       	out	0x3f, r1	; 63
+  58:	cf e5       	ldi	r28, 0x5F	; 95
+  5a:	d8 e0       	ldi	r29, 0x08	; 8
+  5c:	de bf       	out	0x3e, r29	; 62
+  5e:	cd bf       	out	0x3d, r28	; 61
+
+00000060 <__do_clear_bss>:
+  60:	20 e0       	ldi	r18, 0x00	; 0
+  62:	a0 e6       	ldi	r26, 0x60	; 96
+  64:	b0 e0       	ldi	r27, 0x00	; 0
+  66:	01 c0       	rjmp	.+2      	; 0x6a <.do_clear_bss_start>
+
+00000068 <.do_clear_bss_loop>:
+  68:	1d 92       	st	X+, r1
+
+0000006a <.do_clear_bss_start>:
+  6a:	a0 36       	cpi	r26, 0x60	; 96
+  6c:	b2 07       	cpc	r27, r18
+  6e:	e1 f7       	brne	.-8      	; 0x68 <.do_clear_bss_loop>
+  70:	0e 94 3e 00 	call	0x7c	; 0x7c <main>
+  74:	0c 94 6d 00 	jmp	0xda	; 0xda <_exit>
+
+00000078 <__bad_interrupt>:
+  78:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+0000007c <main>:
+#include <string.h>
+
+int main(void)
+{
+	//char aa[10];
+	DDRA = 0xFF;
+  7c:	8f ef       	ldi	r24, 0xFF	; 255
+  7e:	8a bb       	out	0x1a, r24	; 26
+	PORTB |= 1;
+  80:	c0 9a       	sbi	0x18, 0	; 24
+    UART_init();
+  82:	0e 94 63 00 	call	0xc6	; 0xc6 <UART_init>
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+  86:	2f ef       	ldi	r18, 0xFF	; 255
+  88:	31 e1       	ldi	r19, 0x11	; 17
+  8a:	8a e7       	ldi	r24, 0x7A	; 122
+  8c:	21 50       	subi	r18, 0x01	; 1
+  8e:	30 40       	sbci	r19, 0x00	; 0
+  90:	80 40       	sbci	r24, 0x00	; 0
+  92:	e1 f7       	brne	.-8      	; 0x8c <main+0x10>
+  94:	00 c0       	rjmp	.+0      	; 0x96 <main+0x1a>
+  96:	00 00       	nop
+  98:	9f ef       	ldi	r25, 0xFF	; 255
+  9a:	2e e9       	ldi	r18, 0x9E	; 158
+  9c:	34 e2       	ldi	r19, 0x24	; 36
+  9e:	91 50       	subi	r25, 0x01	; 1
+  a0:	20 40       	sbci	r18, 0x00	; 0
+  a2:	30 40       	sbci	r19, 0x00	; 0
+  a4:	e1 f7       	brne	.-8      	; 0x9e <main+0x22>
+  a6:	00 c0       	rjmp	.+0      	; 0xa8 <main+0x2c>
+  a8:	00 00       	nop
+	_delay_ms(1500);
+	
+	/* Replace with your application code */
+    while (1) 
+    {		
+		PORTA ^= 1;
+  aa:	91 e0       	ldi	r25, 0x01	; 1
+  ac:	8b b3       	in	r24, 0x1b	; 27
+  ae:	89 27       	eor	r24, r25
+  b0:	8b bb       	out	0x1b, r24	; 27
+  b2:	8f ef       	ldi	r24, 0xFF	; 255
+  b4:	29 e6       	ldi	r18, 0x69	; 105
+  b6:	38 e1       	ldi	r19, 0x18	; 24
+  b8:	81 50       	subi	r24, 0x01	; 1
+  ba:	20 40       	sbci	r18, 0x00	; 0
+  bc:	30 40       	sbci	r19, 0x00	; 0
+  be:	e1 f7       	brne	.-8      	; 0xb8 <main+0x3c>
+  c0:	00 c0       	rjmp	.+0      	; 0xc2 <main+0x46>
+  c2:	00 00       	nop
+  c4:	f3 cf       	rjmp	.-26     	; 0xac <main+0x30>
+
+000000c6 <UART_init>:
+				str[i] = UDR; // receive the byte in the tmp_str buffer on the specified address
+				if (is_str_reached(afterstr, after_str_length, str[i], &tmp))//check if a received char is the last char in str
+				{
+
+					get_flag = 1; //set the flag indicating after_str_reached
+					str[i - (after_str_length - 1)] = 0;//remove afterstr from str[30] by ending the string(putting 
+  c6:	82 e0       	ldi	r24, 0x02	; 2
+  c8:	8b b9       	out	0x0b, r24	; 11
+  ca:	88 e1       	ldi	r24, 0x18	; 24
+  cc:	8a b9       	out	0x0a, r24	; 10
+														//'\0' at the first address of afterstr stored in str[30]
+					strcpy(dest_str, str);
+					dest_str[i - (after_str_length - 1)] = 0;
+					get_flag = 1;
+  ce:	86 e8       	ldi	r24, 0x86	; 134
+  d0:	80 bd       	out	0x20, r24	; 32
+
+	if (check_string(beforestr, delay_time))  
+	{
+
+		
+		while((millis(delay_time)) && (get_flag == 0))// if the first word is reached // then start getting the world
+  d2:	10 bc       	out	0x20, r1	; 32
+  d4:	87 e6       	ldi	r24, 0x67	; 103
+  d6:	89 b9       	out	0x09, r24	; 9
+  d8:	08 95       	ret
+
+000000da <_exit>:
+  da:	f8 94       	cli
+
+000000dc <__stop_program>:
+  dc:	ff cf       	rjmp	.-2      	; 0xdc <__stop_program>

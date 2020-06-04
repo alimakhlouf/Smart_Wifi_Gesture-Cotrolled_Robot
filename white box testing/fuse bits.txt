@@ -1,0 +1,7 @@
+8 mega interal
+Low Fuse: A4
+High Fuse: DF
+
+1 mega
+Low Fuse: A1
+High Fuse: DF

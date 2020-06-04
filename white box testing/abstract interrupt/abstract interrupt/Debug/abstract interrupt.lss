@@ -1,0 +1,364 @@
+
+abstract interrupt.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         0000017c  00000000  00000000  00000074  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00800060  000001f0  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          0000000a  00800060  00800060  000001f0  2**0
+                  ALLOC
+  3 .comment      00000030  00000000  00000000  000001f0  2**0
+                  CONTENTS, READONLY
+  4 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000220  2**2
+                  CONTENTS, READONLY
+  5 .debug_aranges 000000d0  00000000  00000000  0000025c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_info   00000935  00000000  00000000  0000032c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_abbrev 0000036f  00000000  00000000  00000c61  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_line   0000040c  00000000  00000000  00000fd0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_frame  000003a4  00000000  00000000  000013dc  2**2
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_str    000003e9  00000000  00000000  00001780  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_loc    00000ccf  00000000  00000000  00001b69  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_ranges 000000c8  00000000  00000000  00002838  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	12 c0       	rjmp	.+36     	; 0x26 <__ctors_end>
+   2:	21 c0       	rjmp	.+66     	; 0x46 <__bad_interrupt>
+   4:	20 c0       	rjmp	.+64     	; 0x46 <__bad_interrupt>
+   6:	1f c0       	rjmp	.+62     	; 0x46 <__bad_interrupt>
+   8:	1e c0       	rjmp	.+60     	; 0x46 <__bad_interrupt>
+   a:	1d c0       	rjmp	.+58     	; 0x46 <__bad_interrupt>
+   c:	1c c0       	rjmp	.+56     	; 0x46 <__bad_interrupt>
+   e:	1b c0       	rjmp	.+54     	; 0x46 <__bad_interrupt>
+  10:	1a c0       	rjmp	.+52     	; 0x46 <__bad_interrupt>
+  12:	19 c0       	rjmp	.+50     	; 0x46 <__bad_interrupt>
+  14:	18 c0       	rjmp	.+48     	; 0x46 <__bad_interrupt>
+  16:	53 c0       	rjmp	.+166    	; 0xbe <__vector_11>
+  18:	7b c0       	rjmp	.+246    	; 0x110 <__vector_12>
+  1a:	28 c0       	rjmp	.+80     	; 0x6c <__vector_13>
+  1c:	14 c0       	rjmp	.+40     	; 0x46 <__bad_interrupt>
+  1e:	13 c0       	rjmp	.+38     	; 0x46 <__bad_interrupt>
+  20:	12 c0       	rjmp	.+36     	; 0x46 <__bad_interrupt>
+  22:	11 c0       	rjmp	.+34     	; 0x46 <__bad_interrupt>
+  24:	10 c0       	rjmp	.+32     	; 0x46 <__bad_interrupt>
+
+00000026 <__ctors_end>:
+  26:	11 24       	eor	r1, r1
+  28:	1f be       	out	0x3f, r1	; 63
+  2a:	cf e5       	ldi	r28, 0x5F	; 95
+  2c:	d4 e0       	ldi	r29, 0x04	; 4
+  2e:	de bf       	out	0x3e, r29	; 62
+  30:	cd bf       	out	0x3d, r28	; 61
+
+00000032 <__do_clear_bss>:
+  32:	20 e0       	ldi	r18, 0x00	; 0
+  34:	a0 e6       	ldi	r26, 0x60	; 96
+  36:	b0 e0       	ldi	r27, 0x00	; 0
+  38:	01 c0       	rjmp	.+2      	; 0x3c <.do_clear_bss_start>
+
+0000003a <.do_clear_bss_loop>:
+  3a:	1d 92       	st	X+, r1
+
+0000003c <.do_clear_bss_start>:
+  3c:	aa 36       	cpi	r26, 0x6A	; 106
+  3e:	b2 07       	cpc	r27, r18
+  40:	e1 f7       	brne	.-8      	; 0x3a <.do_clear_bss_loop>
+  42:	0a d0       	rcall	.+20     	; 0x58 <main>
+  44:	99 c0       	rjmp	.+306    	; 0x178 <_exit>
+
+00000046 <__bad_interrupt>:
+  46:	dc cf       	rjmp	.-72     	; 0x0 <__vectors>
+
+00000048 <receive_isr>:
+#include "uart_config.h"
+
+uint8_t tmp;
+void receive_isr()
+{
+	PORTC ^= 1 << 5;
+  48:	95 b3       	in	r25, 0x15	; 21
+  4a:	80 e2       	ldi	r24, 0x20	; 32
+  4c:	89 27       	eor	r24, r25
+  4e:	85 bb       	out	0x15, r24	; 21
+	tmp = UDR;
+  50:	8c b1       	in	r24, 0x0c	; 12
+  52:	80 93 60 00 	sts	0x0060, r24
+  56:	08 95       	ret
+
+00000058 <main>:
+}
+#endif
+
+int main(void)
+{
+	DDRC |= 1 << 5;
+  58:	a5 9a       	sbi	0x14, 5	; 20
+	
+	UART_init();
+  5a:	84 d0       	rcall	.+264    	; 0x164 <UART_init>
+	
+	USART_RXC_ISR = receive_isr;
+  5c:	84 e2       	ldi	r24, 0x24	; 36
+  5e:	90 e0       	ldi	r25, 0x00	; 0
+  60:	90 93 67 00 	sts	0x0067, r25
+  64:	80 93 66 00 	sts	0x0066, r24
+
+	sei();
+  68:	78 94       	sei
+	
+    /* Replace with your application code */
+    while (1) 
+    {
+		
+    }
+  6a:	ff cf       	rjmp	.-2      	; 0x6a <main+0x12>
+
+0000006c <__vector_13>:
+	while((millis(delay_time)) && (get_flag == 0))// if the first word is reached // then start getting the world
+	{
+
+		if (BIT_IS_SET(UCSRA, RXC)) // if receive flag is activated
+		{
+			str[i] = UDR; // receive the byte in the tmp_str buffer on the specified address
+  6c:	1f 92       	push	r1
+  6e:	0f 92       	push	r0
+  70:	0f b6       	in	r0, 0x3f	; 63
+  72:	0f 92       	push	r0
+  74:	11 24       	eor	r1, r1
+  76:	2f 93       	push	r18
+  78:	3f 93       	push	r19
+  7a:	4f 93       	push	r20
+  7c:	5f 93       	push	r21
+			
+			if (afterstr == NULL)
+  7e:	6f 93       	push	r22
+  80:	7f 93       	push	r23
+  82:	8f 93       	push	r24
+			{
+				i++;
+  84:	9f 93       	push	r25
+  86:	af 93       	push	r26
+			}
+			else
+			{
+				
+				if (is_str_reached(afterstr, str[i], &tmp))//check if a received char is the last char in str
+  88:	bf 93       	push	r27
+  8a:	ef 93       	push	r30
+  8c:	ff 93       	push	r31
+  8e:	f8 94       	cli
+  90:	e0 91 61 00 	lds	r30, 0x0061
+  94:	f0 91 62 00 	lds	r31, 0x0062
+				{
+					get_flag = 1; //set the flag indicating after_str_reached
+					str[i - (after_str_length - 1)] = 0;//remove afterstr from str[30] by ending the string(putting
+  98:	09 95       	icall
+  9a:	78 94       	sei
+  9c:	ff 91       	pop	r31
+  9e:	ef 91       	pop	r30
+  a0:	bf 91       	pop	r27
+  a2:	af 91       	pop	r26
+  a4:	9f 91       	pop	r25
+  a6:	8f 91       	pop	r24
+					//'\0' at the first address of afterstr stored in str[30]
+					strcpy(dest_str, str);
+  a8:	7f 91       	pop	r23
+  aa:	6f 91       	pop	r22
+  ac:	5f 91       	pop	r21
+  ae:	4f 91       	pop	r20
+  b0:	3f 91       	pop	r19
+					dest_str[i - (after_str_length - 1)] = 0;
+  b2:	2f 91       	pop	r18
+  b4:	0f 90       	pop	r0
+  b6:	0f be       	out	0x3f, r0	; 63
+  b8:	0f 90       	pop	r0
+			else
+			{
+				
+				if (is_str_reached(afterstr, str[i], &tmp))//check if a received char is the last char in str
+				{
+					get_flag = 1; //set the flag indicating after_str_reached
+  ba:	1f 90       	pop	r1
+  bc:	18 95       	reti
+
+000000be <__vector_11>:
+					strcpy(dest_str, str);
+					dest_str[i - (after_str_length - 1)] = 0;
+				}
+				else
+				{
+					i++;
+  be:	1f 92       	push	r1
+	char str[30] = {0};
+	unint8_t i = 0;
+	unint8_t after_str_length = strlen(afterstr);
+	unint8_t tmp = 0; //used for deciding the next position in the tmp_str for storing the received char from UART
+	
+	while((millis(delay_time)) && (get_flag == 0))// if the first word is reached // then start getting the world
+  c0:	0f 92       	push	r0
+  c2:	0f b6       	in	r0, 0x3f	; 63
+  c4:	0f 92       	push	r0
+  c6:	11 24       	eor	r1, r1
+  c8:	2f 93       	push	r18
+  ca:	3f 93       	push	r19
+			
+		}
+		
+	}
+	
+	DISABLE_TIMER0; //disable timer0 . responsible for millis function
+  cc:	4f 93       	push	r20
+  ce:	5f 93       	push	r21
+  d0:	6f 93       	push	r22
+  d2:	7f 93       	push	r23
+  d4:	8f 93       	push	r24
+  d6:	9f 93       	push	r25
+	
+	if (afterstr == NULL)
+  d8:	af 93       	push	r26
+  da:	bf 93       	push	r27
+	{
+		strcpy(dest_str, str);
+  dc:	ef 93       	push	r30
+  de:	ff 93       	push	r31
+  e0:	f8 94       	cli
+  e2:	e0 91 66 00 	lds	r30, 0x0066
+		get_flag = 1;
+  e6:	f0 91 67 00 	lds	r31, 0x0067
+	}
+	
+	return get_flag;
+	
+}
+  ea:	09 95       	icall
+  ec:	78 94       	sei
+  ee:	ff 91       	pop	r31
+  f0:	ef 91       	pop	r30
+  f2:	bf 91       	pop	r27
+  f4:	af 91       	pop	r26
+  f6:	9f 91       	pop	r25
+  f8:	8f 91       	pop	r24
+  fa:	7f 91       	pop	r23
+  fc:	6f 91       	pop	r22
+  fe:	5f 91       	pop	r21
+ 100:	4f 91       	pop	r20
+ 102:	3f 91       	pop	r19
+ 104:	2f 91       	pop	r18
+ 106:	0f 90       	pop	r0
+ 108:	0f be       	out	0x3f, r0	; 63
+ 10a:	0f 90       	pop	r0
+ 10c:	1f 90       	pop	r1
+ 10e:	18 95       	reti
+
+00000110 <__vector_12>:
+ 110:	1f 92       	push	r1
+ 112:	0f 92       	push	r0
+ 114:	0f b6       	in	r0, 0x3f	; 63
+	sei();
+
+}
+//======================================================================================
+void CONFIG_UDRE_ISR() // finished
+{
+ 116:	0f 92       	push	r0
+ 118:	11 24       	eor	r1, r1
+ 11a:	2f 93       	push	r18
+ 11c:	3f 93       	push	r19
+ 11e:	4f 93       	push	r20
+ 120:	5f 93       	push	r21
+ 122:	6f 93       	push	r22
+ 124:	7f 93       	push	r23
+ 126:	8f 93       	push	r24
+ 128:	9f 93       	push	r25
+ 12a:	af 93       	push	r26
+ 12c:	bf 93       	push	r27
+ 12e:	ef 93       	push	r30
+ 130:	ff 93       	push	r31
+	//---------------------------------------------------------
+	// we need to Global interrupt to prevent nested interrupt .
+	cli();
+ 132:	f8 94       	cli
+	//---------------------------------------------------------
+	
+	SET_BIT(UCSRA, UDRE); // thus we clear it before each transmission that when the transmission completes TXC=1,we clear it before each transmission
+ 134:	5d 9a       	sbi	0x0b, 5	; 11
+	//------------------------------------------------------------
+	// API ISR:
+	//------------------------------------------------------------
+	USART_UDRIE_ISR();
+ 136:	e0 91 63 00 	lds	r30, 0x0063
+ 13a:	f0 91 64 00 	lds	r31, 0x0064
+ 13e:	09 95       	icall
+	
+	sei();
+ 140:	78 94       	sei
+}
+ 142:	ff 91       	pop	r31
+ 144:	ef 91       	pop	r30
+ 146:	bf 91       	pop	r27
+ 148:	af 91       	pop	r26
+ 14a:	9f 91       	pop	r25
+ 14c:	8f 91       	pop	r24
+ 14e:	7f 91       	pop	r23
+ 150:	6f 91       	pop	r22
+ 152:	5f 91       	pop	r21
+ 154:	4f 91       	pop	r20
+ 156:	3f 91       	pop	r19
+ 158:	2f 91       	pop	r18
+ 15a:	0f 90       	pop	r0
+ 15c:	0f be       	out	0x3f, r0	; 63
+ 15e:	0f 90       	pop	r0
+ 160:	1f 90       	pop	r1
+ 162:	18 95       	reti
+
+00000164 <UART_init>:
+		UBBR_value >>= UART_PRECISION_BITS; // round down by just removing the precision bit
+	}
+	
+	//PORTB = UBBR_value; just for testing
+	//setting the U2X bit to 1 for double speed asynchronous
+	UCSRA = (DOUBLE_SPEED<< U2X);	
+ 164:	82 e0       	ldi	r24, 0x02	; 2
+ 166:	8b b9       	out	0x0b, r24	; 11
+	 * RXEN  = 1/0 Receiver En/Disable
+	 * TXEN  = 1/0 Transmitter En/DisEnable
+	 * UCSZ2 = 0   For 8-bit data mode
+	 * RXB8 & TXB8 not used for 8-bit data mode
+	 ***********************************************************************/ 
+	UCSRB = (TRANSMIT_ENABLE << TXEN)|(RECIEVE_ENABLE<<RXEN) |(TRANSMIT_COMPLETE_INTERRUP<<TXCIE)|(RECEIVE_COMPLETE_INTERRUP<<RXCIE)|(DATA_REGISTER_EMPTY_INTERRUP<<UDRIE);
+ 168:	88 e9       	ldi	r24, 0x98	; 152
+ 16a:	8a b9       	out	0x0a, r24	; 10
+	 * UPM1:0  = 0 Disable parity bit
+	 * USBS    = 0 One stop bit
+	 * UCSZ1:0 = 11 For 8-bit data mode
+	 * UCPOL   = 0 Used with the Synchronous operation only
+	 ***********************************************************************/ 
+	UCSRC =(1<<URSEL)|(SYNCH_ASYNCH<<UMSEL)|(PARITY<<UPM0)|(STOP_BITS<<USBS)|(DATA_SIZE<<UCSZ0)|(TRANS_SAMPLE_CONFIG<<UCPOL);
+ 16c:	86 e8       	ldi	r24, 0x86	; 134
+ 16e:	80 bd       	out	0x20, r24	; 32
+ 	
+	//Put the upper part of the UBBR value here (bits 8 to 11)
+	UBRRH = (unint8_t)(UBBR_value >> 8);
+ 170:	10 bc       	out	0x20, r1	; 32
+	//Put the remaining part of the UBBR value here
+	UBRRL = (unint8_t)UBBR_value;
+ 172:	87 e6       	ldi	r24, 0x67	; 103
+ 174:	89 b9       	out	0x09, r24	; 9
+ 176:	08 95       	ret
+
+00000178 <_exit>:
+ 178:	f8 94       	cli
+
+0000017a <__stop_program>:
+ 17a:	ff cf       	rjmp	.-2      	; 0x17a <__stop_program>

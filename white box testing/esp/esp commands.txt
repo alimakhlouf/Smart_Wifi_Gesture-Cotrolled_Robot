@@ -1,0 +1,96 @@
+try single channel
+try another port(80 t0 8080)
+try to change lnk ID (0 to 1)
+
+
+//at+cipmode = 1
+
+
+
+AT+CWMODE=1
+1 = Station mode 
+2 = AP mode 
+3 = AP + Station mode (Yes, ESP8266 has a dual mode!)
+
+AT+CIPMUX=0
+0: Single connection
+1: Multiple connections (MAX 4)
+
+AT+CWLAP
+show all networks
+
+AT+CWJAP="tedata1","s45kq1V#x9h"
+connect
+
+AT+CIFSR
+show ip
+
+
+MULTIPLE CONNECTIONS
+AT+CIPSTART=0,"TCP","embiotesp.000webhostapp.com",80
+AT+CIPSEND=0,81
+///////////////////////////
+
+////////////////
+SINGLE CONNECTIONS
+AT+CIPSTART="TCP","embiotesp.000webhostapp.com",80\r\n
+AT+CIPSEND=75\r\n
+///////////////////////////////////
+
+
+
+the successful one
+////////////////
+SINGLE CONNECTIONS 2
+AT+CIPSTART="TCP","embiotesp.000webhostapp.com",80\r\n
+AT+CIPSEND=85\r\n
+///////////////////////////////////
+GET /saveout.php?apples=99&oranges=99 HTTP/1.0\r\nHOST: embiotesp.000webhostapp.com\r\n\r\n\r\n
+ÂÌ« œÌ «··Ì «‘ €·  «·”»» «‰ «·’Ì€… «··Ì  Õ  œÌ „Ÿ»Êÿ… „»Ìÿ·⁄·Ì‘ „‘«ﬂ· ·„« »»⁄ Â« .. Ê »Õ”» ﬂ· ”·«‘ «— «Ê ”·«‘ «‰ ⁄·Ï «‰Â Õ—› Ê«Õœ(„»Õ”»‘ «Œ— « ‰Ì‰) Ê »ﬂœÂ ÿÊ· «·‰’ 77 Ê ” Â Õ—Ê› “Ì«œ… Ì»ﬁÏ 83 Ê ÂÌ‘ €·
+
+
+//////////////////////////////////////////////////////////////////////////////
+server commands:
+
+
+AT+CWMODE=1\r\n 
+1 = Station mode (client)
+2 = AP mode (host)
+3 = AP + Station mode (Yes, ESP8266 has a dual mode!)
+
+AT+CWLAP\r\n
+show all networks
+
+AT+CWJAP="tedata1","s45kq1V#x9h"
+connect
+
+AT+CIFSR
+
+//additional things
+AT+CIPSTA=î192.168.1.108î // sets a astation IP address ... done once
+
+AT+CIPMUX=1\r\n //multiple channel
+AT+CIPSERVER=1,80\r\n //start the server at HTTP port 80
+
+
+
+
+
+AT+CIPSEND=0,29\r\n
+
+<h1>Hello</h1><h2>SAMEER</h2>\r\n
+
+then:Type in AT+CIPCLOSE=0 //to close the channel and see the text sent .. wrong
+
+AT+CIPSERVER=0 followed by a Reset AT+RST //to close the server
+
+
+AT+CIPSTART=0,"TCP","embiotesp.000webhostapp.com",80\r\n
+AT+CIPSEND=0,85\r\n
+GET /saveout.php?apples=88&oranges=88 HTTP/1.0\r\nHOST: embiotesp.000webhostapp.com\r\n\r\n\r\n
+
+///////////////////////////////////////////////////
+SINGLE CONNECTIONS 2
+AT+CIPSTART="TCP","192.168.1.108",80\r\n
+AT+CIPSEND=85\r\n
+ 

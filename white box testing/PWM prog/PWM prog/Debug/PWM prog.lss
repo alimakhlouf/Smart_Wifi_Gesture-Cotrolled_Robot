@@ -1,0 +1,1562 @@
+
+PWM prog.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000908  00000000  00000000  00000054  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00800060  0000095c  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .comment      00000030  00000000  00000000  0000095c  2**0
+                  CONTENTS, READONLY
+  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  0000098c  2**2
+                  CONTENTS, READONLY
+  4 .debug_aranges 00000098  00000000  00000000  000009c8  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_info   000009bb  00000000  00000000  00000a60  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_abbrev 0000030e  00000000  00000000  0000141b  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_line   000003f9  00000000  00000000  00001729  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_frame  0000018c  00000000  00000000  00001b24  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_str    000002e7  00000000  00000000  00001cb0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_loc    00000a4e  00000000  00000000  00001f97  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_ranges 00000098  00000000  00000000  000029e5  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 2a 00 	jmp	0x54	; 0x54 <__ctors_end>
+   4:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   8:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  10:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  14:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  18:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  1c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  20:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  24:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  28:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  2c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  30:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  34:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  38:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  3c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  40:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  44:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  48:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  4c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  50:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+
+00000054 <__ctors_end>:
+  54:	11 24       	eor	r1, r1
+  56:	1f be       	out	0x3f, r1	; 63
+  58:	cf e5       	ldi	r28, 0x5F	; 95
+  5a:	d8 e0       	ldi	r29, 0x08	; 8
+  5c:	de bf       	out	0x3e, r29	; 62
+  5e:	cd bf       	out	0x3d, r28	; 61
+  60:	0e 94 9e 00 	call	0x13c	; 0x13c <main>
+  64:	0c 94 82 04 	jmp	0x904	; 0x904 <_exit>
+
+00000068 <__bad_interrupt>:
+  68:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+0000006c <DIO_SetPinDir>:
+
+void DIO_SetPinDir(uint8_t Pin_No,uint8_t PinDir)
+{
+	
+	uint8_t PinPort= Pin_No / No_PinPerPort;
+	uint8_t PinNo_InPort = MODULO(Pin_No, No_PinPerPort);
+  6c:	e8 2f       	mov	r30, r24
+  6e:	e6 95       	lsr	r30
+  70:	e6 95       	lsr	r30
+  72:	e6 95       	lsr	r30
+  74:	87 70       	andi	r24, 0x07	; 7
+	
+	if (PinDir != DIO_PULLUP)
+  76:	62 30       	cpi	r22, 0x02	; 2
+  78:	e1 f0       	breq	.+56     	; 0xb2 <DIO_SetPinDir+0x46>
+	{
+		assig_bit(*(DDR_REG_BASE + PORT_OFFSET(PinPort)), PinNo_InPort, PinDir);
+  7a:	f0 e0       	ldi	r31, 0x00	; 0
+  7c:	9f 01       	movw	r18, r30
+  7e:	22 0f       	add	r18, r18
+  80:	33 1f       	adc	r19, r19
+  82:	e2 0f       	add	r30, r18
+  84:	f3 1f       	adc	r31, r19
+  86:	f1 95       	neg	r31
+  88:	e1 95       	neg	r30
+  8a:	f1 09       	sbc	r31, r1
+  8c:	22 ad       	ldd	r18, Z+58	; 0x3a
+  8e:	41 e0       	ldi	r20, 0x01	; 1
+  90:	50 e0       	ldi	r21, 0x00	; 0
+  92:	08 2e       	mov	r0, r24
+  94:	02 c0       	rjmp	.+4      	; 0x9a <DIO_SetPinDir+0x2e>
+  96:	44 0f       	add	r20, r20
+  98:	55 1f       	adc	r21, r21
+  9a:	0a 94       	dec	r0
+  9c:	e2 f7       	brpl	.-8      	; 0x96 <DIO_SetPinDir+0x2a>
+  9e:	94 2f       	mov	r25, r20
+  a0:	90 95       	com	r25
+  a2:	92 23       	and	r25, r18
+  a4:	01 c0       	rjmp	.+2      	; 0xa8 <DIO_SetPinDir+0x3c>
+  a6:	66 0f       	add	r22, r22
+  a8:	8a 95       	dec	r24
+  aa:	ea f7       	brpl	.-6      	; 0xa6 <DIO_SetPinDir+0x3a>
+  ac:	69 2b       	or	r22, r25
+  ae:	62 af       	std	Z+58, r22	; 0x3a
+  b0:	08 95       	ret
+	}
+	else //if pull up then make it INPUT  and put 1 to the PORT reg
+	{
+		assig_bit(*(DDR_REG_BASE + PORT_OFFSET(PinPort)), PinNo_InPort, 0); // assign pin as input
+  b2:	f0 e0       	ldi	r31, 0x00	; 0
+  b4:	9f 01       	movw	r18, r30
+  b6:	22 0f       	add	r18, r18
+  b8:	33 1f       	adc	r19, r19
+  ba:	e2 0f       	add	r30, r18
+  bc:	f3 1f       	adc	r31, r19
+  be:	f1 95       	neg	r31
+  c0:	e1 95       	neg	r30
+  c2:	f1 09       	sbc	r31, r1
+  c4:	42 ad       	ldd	r20, Z+58	; 0x3a
+  c6:	21 e0       	ldi	r18, 0x01	; 1
+  c8:	30 e0       	ldi	r19, 0x00	; 0
+  ca:	b9 01       	movw	r22, r18
+  cc:	02 c0       	rjmp	.+4      	; 0xd2 <DIO_SetPinDir+0x66>
+  ce:	66 0f       	add	r22, r22
+  d0:	77 1f       	adc	r23, r23
+  d2:	8a 95       	dec	r24
+  d4:	e2 f7       	brpl	.-8      	; 0xce <DIO_SetPinDir+0x62>
+  d6:	cb 01       	movw	r24, r22
+  d8:	96 2f       	mov	r25, r22
+  da:	90 95       	com	r25
+  dc:	29 2f       	mov	r18, r25
+  de:	24 23       	and	r18, r20
+  e0:	22 af       	std	Z+58, r18	; 0x3a
+		assig_bit(*(PORT_REG_BASE + PORT_OFFSET(PinPort)), PinNo_InPort, 1); // put 1 to port pin to make it pull up
+  e2:	23 ad       	ldd	r18, Z+59	; 0x3b
+  e4:	92 23       	and	r25, r18
+  e6:	89 2b       	or	r24, r25
+  e8:	83 af       	std	Z+59, r24	; 0x3b
+  ea:	08 95       	ret
+
+000000ec <DIO_SetPinVal>:
+	return (get_bit(*(PIN_REG_BASE + PORT_OFFSET(PinPort)), PinNo_InPort));
+}
+
+
+void DIO_SetPinVal(uint8_t Pin_No, uint8_t PinVal)
+{
+  ec:	96 2f       	mov	r25, r22
+	uint8_t PinPort = Pin_No / No_PinPerPort;
+  ee:	38 2f       	mov	r19, r24
+  f0:	36 95       	lsr	r19
+  f2:	36 95       	lsr	r19
+  f4:	36 95       	lsr	r19
+	uint8_t PinNo_InPort = MODULO(Pin_No, No_PinPerPort);
+	
+	assig_bit(*(PORT_REG_BASE + PORT_OFFSET(PinPort)), PinNo_InPort, PinVal);
+  f6:	e3 2f       	mov	r30, r19
+  f8:	f0 e0       	ldi	r31, 0x00	; 0
+  fa:	af 01       	movw	r20, r30
+  fc:	44 0f       	add	r20, r20
+  fe:	55 1f       	adc	r21, r21
+ 100:	e4 0f       	add	r30, r20
+ 102:	f5 1f       	adc	r31, r21
+ 104:	f1 95       	neg	r31
+ 106:	e1 95       	neg	r30
+ 108:	f1 09       	sbc	r31, r1
+ 10a:	63 ad       	ldd	r22, Z+59	; 0x3b
+
+
+void DIO_SetPinVal(uint8_t Pin_No, uint8_t PinVal)
+{
+	uint8_t PinPort = Pin_No / No_PinPerPort;
+	uint8_t PinNo_InPort = MODULO(Pin_No, No_PinPerPort);
+ 10c:	33 0f       	add	r19, r19
+ 10e:	33 0f       	add	r19, r19
+ 110:	33 0f       	add	r19, r19
+ 112:	83 1b       	sub	r24, r19
+	
+	assig_bit(*(PORT_REG_BASE + PORT_OFFSET(PinPort)), PinNo_InPort, PinVal);
+ 114:	21 e0       	ldi	r18, 0x01	; 1
+ 116:	30 e0       	ldi	r19, 0x00	; 0
+ 118:	08 2e       	mov	r0, r24
+ 11a:	02 c0       	rjmp	.+4      	; 0x120 <DIO_SetPinVal+0x34>
+ 11c:	22 0f       	add	r18, r18
+ 11e:	33 1f       	adc	r19, r19
+ 120:	0a 94       	dec	r0
+ 122:	e2 f7       	brpl	.-8      	; 0x11c <DIO_SetPinVal+0x30>
+ 124:	20 95       	com	r18
+ 126:	26 23       	and	r18, r22
+ 128:	69 2f       	mov	r22, r25
+ 12a:	70 e0       	ldi	r23, 0x00	; 0
+ 12c:	02 c0       	rjmp	.+4      	; 0x132 <DIO_SetPinVal+0x46>
+ 12e:	66 0f       	add	r22, r22
+ 130:	77 1f       	adc	r23, r23
+ 132:	8a 95       	dec	r24
+ 134:	e2 f7       	brpl	.-8      	; 0x12e <DIO_SetPinVal+0x42>
+ 136:	62 2b       	or	r22, r18
+ 138:	63 af       	std	Z+59, r22	; 0x3b
+ 13a:	08 95       	ret
+
+0000013c <main>:
+#include "delay_api.h"
+
+
+int main(void)
+{
+	pwm_init(PWM0 | PWM1 | PWM2 | PWM3, 1000);
+ 13c:	68 ee       	ldi	r22, 0xE8	; 232
+ 13e:	73 e0       	ldi	r23, 0x03	; 3
+ 140:	8f e0       	ldi	r24, 0x0F	; 15
+ 142:	0e 94 17 01 	call	0x22e	; 0x22e <pwm_init>
+	
+	pwm_start(PWM0 | PWM1 | PWM2 | PWM3);
+ 146:	8f e0       	ldi	r24, 0x0F	; 15
+ 148:	0e 94 61 03 	call	0x6c2	; 0x6c2 <pwm_start>
+	
+	pwm_setDuty(PWM0 | PWM1 | PWM2 | PWM3, 30);
+ 14c:	6e e1       	ldi	r22, 0x1E	; 30
+ 14e:	8f e0       	ldi	r24, 0x0F	; 15
+ 150:	0e 94 96 03 	call	0x72c	; 0x72c <pwm_setDuty>
+ 154:	80 e3       	ldi	r24, 0x30	; 48
+ 156:	95 e7       	ldi	r25, 0x75	; 117
+	);
+}
+
+void _delay_ms_loop(uint16_t __count)
+{
+	__asm__ volatile (
+ 158:	28 ec       	ldi	r18, 0xC8	; 200
+ 15a:	30 e0       	ldi	r19, 0x00	; 0
+ 15c:	f9 01       	movw	r30, r18
+ 15e:	31 97       	sbiw	r30, 0x01	; 1
+ 160:	f1 f7       	brne	.-4      	; 0x15e <main+0x22>
+ 162:	01 97       	sbiw	r24, 0x01	; 1
+	}
+	else if (tmp > 65535)
+	{
+		ticks = (uint16_t)(ms_time * 10.0);
+		
+		while(ticks)
+ 164:	d9 f7       	brne	.-10     	; 0x15c <main+0x20>
+ 166:	0f 2e       	mov	r0, r31
+ 168:	f3 e0       	ldi	r31, 0x03	; 3
+ 16a:	7f 2e       	mov	r7, r31
+ 16c:	f0 2d       	mov	r31, r0
+ 16e:	81 2c       	mov	r8, r1
+ 170:	0f 2e       	mov	r0, r31
+ 172:	f4 e6       	ldi	r31, 0x64	; 100
+ 174:	df 2e       	mov	r13, r31
+ 176:	f0 2d       	mov	r31, r0
+ 178:	91 2c       	mov	r9, r1
+ 17a:	a1 2c       	mov	r10, r1
+				_delay_ms(20);
+			}
+			
+		}
+		
+		pwm_stop(PWM0);
+ 17c:	68 94       	set
+ 17e:	bb 24       	eor	r11, r11
+ 180:	b4 f8       	bld	r11, 4
+ 182:	0f 2e       	mov	r0, r31
+ 184:	f7 e2       	ldi	r31, 0x27	; 39
+ 186:	cf 2e       	mov	r12, r31
+ 188:	f0 2d       	mov	r31, r0
+	);
+}
+
+void _delay_ms_loop(uint16_t __count)
+{
+	__asm__ volatile (
+ 18a:	08 ec       	ldi	r16, 0xC8	; 200
+ 18c:	10 e0       	ldi	r17, 0x00	; 0
+{
+	pwm_init(PWM0 | PWM1 | PWM2 | PWM3, 1000);
+	
+	pwm_start(PWM0 | PWM1 | PWM2 | PWM3);
+	
+	pwm_setDuty(PWM0 | PWM1 | PWM2 | PWM3, 30);
+ 18e:	e7 2c       	mov	r14, r7
+ 190:	f8 2c       	mov	r15, r8
+ 192:	21 c0       	rjmp	.+66     	; 0x1d6 <main+0x9a>
+		for (int j = 0; j < 3; j++)
+		{
+			
+			for (int i = 0; i < 100; i += 5)
+			{
+				pwm_setDuty(PWM0, i);
+ 194:	6c 2f       	mov	r22, r28
+ 196:	81 e0       	ldi	r24, 0x01	; 1
+ 198:	0e 94 96 03 	call	0x72c	; 0x72c <pwm_setDuty>
+ 19c:	6d 2d       	mov	r22, r13
+ 19e:	6c 1b       	sub	r22, r28
+				pwm_setDuty(PWM1 | PWM3, 100 - i);
+ 1a0:	8a e0       	ldi	r24, 0x0A	; 10
+ 1a2:	0e 94 96 03 	call	0x72c	; 0x72c <pwm_setDuty>
+				pwm_setDuty(PWM2, i / 2);
+ 1a6:	be 01       	movw	r22, r28
+ 1a8:	dd 23       	and	r29, r29
+ 1aa:	14 f4       	brge	.+4      	; 0x1b0 <main+0x74>
+ 1ac:	6f 5f       	subi	r22, 0xFF	; 255
+ 1ae:	7f 4f       	sbci	r23, 0xFF	; 255
+ 1b0:	75 95       	asr	r23
+ 1b2:	67 95       	ror	r22
+ 1b4:	84 e0       	ldi	r24, 0x04	; 4
+ 1b6:	0e 94 96 03 	call	0x72c	; 0x72c <pwm_setDuty>
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+ 1ba:	8f e3       	ldi	r24, 0x3F	; 63
+ 1bc:	9c e9       	ldi	r25, 0x9C	; 156
+ 1be:	01 97       	sbiw	r24, 0x01	; 1
+ 1c0:	f1 f7       	brne	.-4      	; 0x1be <main+0x82>
+ 1c2:	00 c0       	rjmp	.+0      	; 0x1c4 <main+0x88>
+ 1c4:	00 00       	nop
+	for (;;)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			
+			for (int i = 0; i < 100; i += 5)
+ 1c6:	25 96       	adiw	r28, 0x05	; 5
+ 1c8:	c4 36       	cpi	r28, 0x64	; 100
+ 1ca:	d1 05       	cpc	r29, r1
+ 1cc:	19 f7       	brne	.-58     	; 0x194 <main+0x58>
+ 1ce:	91 e0       	ldi	r25, 0x01	; 1
+ 1d0:	e9 1a       	sub	r14, r25
+ 1d2:	f1 08       	sbc	r15, r1
+	
+	delay_msec(3000);
+	
+	for (;;)
+	{
+		for (int j = 0; j < 3; j++)
+ 1d4:	19 f0       	breq	.+6      	; 0x1dc <main+0xa0>
+{
+	pwm_init(PWM0 | PWM1 | PWM2 | PWM3, 1000);
+	
+	pwm_start(PWM0 | PWM1 | PWM2 | PWM3);
+	
+	pwm_setDuty(PWM0 | PWM1 | PWM2 | PWM3, 30);
+ 1d6:	c9 2d       	mov	r28, r9
+ 1d8:	da 2d       	mov	r29, r10
+ 1da:	dc cf       	rjmp	.-72     	; 0x194 <main+0x58>
+				_delay_ms(20);
+			}
+			
+		}
+		
+		pwm_stop(PWM0);
+ 1dc:	81 e0       	ldi	r24, 0x01	; 1
+ 1de:	0e 94 29 04 	call	0x852	; 0x852 <pwm_stop>
+ 1e2:	8b 2d       	mov	r24, r11
+ 1e4:	9c 2d       	mov	r25, r12
+ 1e6:	f8 01       	movw	r30, r16
+ 1e8:	31 97       	sbiw	r30, 0x01	; 1
+ 1ea:	f1 f7       	brne	.-4      	; 0x1e8 <main+0xac>
+ 1ec:	01 97       	sbiw	r24, 0x01	; 1
+	}
+	else if (tmp > 65535)
+	{
+		ticks = (uint16_t)(ms_time * 10.0);
+		
+		while(ticks)
+ 1ee:	d9 f7       	brne	.-10     	; 0x1e6 <main+0xaa>
+		delay_msec(1000);
+		pwm_stop(PWM1);
+ 1f0:	82 e0       	ldi	r24, 0x02	; 2
+ 1f2:	0e 94 29 04 	call	0x852	; 0x852 <pwm_stop>
+ 1f6:	8b 2d       	mov	r24, r11
+ 1f8:	9c 2d       	mov	r25, r12
+	);
+}
+
+void _delay_ms_loop(uint16_t __count)
+{
+	__asm__ volatile (
+ 1fa:	f8 01       	movw	r30, r16
+ 1fc:	31 97       	sbiw	r30, 0x01	; 1
+ 1fe:	f1 f7       	brne	.-4      	; 0x1fc <main+0xc0>
+ 200:	01 97       	sbiw	r24, 0x01	; 1
+	}
+	else if (tmp > 65535)
+	{
+		ticks = (uint16_t)(ms_time * 10.0);
+		
+		while(ticks)
+ 202:	d9 f7       	brne	.-10     	; 0x1fa <main+0xbe>
+		delay_msec(1000);
+		pwm_stop(PWM2);
+ 204:	84 e0       	ldi	r24, 0x04	; 4
+ 206:	0e 94 29 04 	call	0x852	; 0x852 <pwm_stop>
+ 20a:	8b 2d       	mov	r24, r11
+ 20c:	9c 2d       	mov	r25, r12
+	);
+}
+
+void _delay_ms_loop(uint16_t __count)
+{
+	__asm__ volatile (
+ 20e:	f8 01       	movw	r30, r16
+ 210:	31 97       	sbiw	r30, 0x01	; 1
+ 212:	f1 f7       	brne	.-4      	; 0x210 <main+0xd4>
+ 214:	01 97       	sbiw	r24, 0x01	; 1
+	}
+	else if (tmp > 65535)
+	{
+		ticks = (uint16_t)(ms_time * 10.0);
+		
+		while(ticks)
+ 216:	d9 f7       	brne	.-10     	; 0x20e <main+0xd2>
+		delay_msec(1000);
+		pwm_stop(PWM3);
+ 218:	88 e0       	ldi	r24, 0x08	; 8
+ 21a:	0e 94 29 04 	call	0x852	; 0x852 <pwm_stop>
+ 21e:	8b 2d       	mov	r24, r11
+ 220:	9c 2d       	mov	r25, r12
+	);
+}
+
+void _delay_ms_loop(uint16_t __count)
+{
+	__asm__ volatile (
+ 222:	f8 01       	movw	r30, r16
+ 224:	31 97       	sbiw	r30, 0x01	; 1
+ 226:	f1 f7       	brne	.-4      	; 0x224 <main+0xe8>
+ 228:	01 97       	sbiw	r24, 0x01	; 1
+	}
+	else if (tmp > 65535)
+	{
+		ticks = (uint16_t)(ms_time * 10.0);
+		
+		while(ticks)
+ 22a:	d9 f7       	brne	.-10     	; 0x222 <main+0xe6>
+ 22c:	b0 cf       	rjmp	.-160    	; 0x18e <main+0x52>
+
+0000022e <pwm_init>:
+
+#include "pwm1.h"
+
+#if defined(ATMEGA32) || defined(ATMEGA16)
+void pwm_init(uint8_t pwm_no, uint16_t freq) // sets the frequency ..and setes the timer as 
+{
+ 22e:	4f 92       	push	r4
+ 230:	5f 92       	push	r5
+ 232:	6f 92       	push	r6
+ 234:	7f 92       	push	r7
+ 236:	8f 92       	push	r8
+ 238:	9f 92       	push	r9
+ 23a:	af 92       	push	r10
+ 23c:	bf 92       	push	r11
+ 23e:	cf 92       	push	r12
+ 240:	df 92       	push	r13
+ 242:	ef 92       	push	r14
+ 244:	ff 92       	push	r15
+ 246:	0f 93       	push	r16
+ 248:	1f 93       	push	r17
+ 24a:	cf 93       	push	r28
+ 24c:	df 93       	push	r29
+ 24e:	18 2f       	mov	r17, r24
+ 250:	eb 01       	movw	r28, r22
+	if (pwm_no & PWM0)
+ 252:	80 ff       	sbrs	r24, 0
+ 254:	91 c0       	rjmp	.+290    	; 0x378 <pwm_init+0x14a>
+	{
+		TCCR0 &= ~(0x07); // clear any previous pre scalers
+ 256:	83 b7       	in	r24, 0x33	; 51
+ 258:	88 7f       	andi	r24, 0xF8	; 248
+ 25a:	83 bf       	out	0x33, r24	; 51
+		
+		if(NUM_REQUIRED_TICKS_NO_PRE < 255) //apply the frequency formula on prescaler = 1 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler=1 for it) we have to increase the prescaler and apply the formulA again
+ 25c:	6b 01       	movw	r12, r22
+ 25e:	e1 2c       	mov	r14, r1
+ 260:	f1 2c       	mov	r15, r1
+ 262:	60 e0       	ldi	r22, 0x00	; 0
+ 264:	72 e1       	ldi	r23, 0x12	; 18
+ 266:	8a e7       	ldi	r24, 0x7A	; 122
+ 268:	90 e0       	ldi	r25, 0x00	; 0
+ 26a:	a7 01       	movw	r20, r14
+ 26c:	96 01       	movw	r18, r12
+ 26e:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 272:	2f 3f       	cpi	r18, 0xFF	; 255
+ 274:	31 05       	cpc	r19, r1
+ 276:	41 05       	cpc	r20, r1
+ 278:	51 05       	cpc	r21, r1
+ 27a:	18 f4       	brcc	.+6      	; 0x282 <pwm_init+0x54>
+		{
+			TCCR0 = (1<<CS00);
+ 27c:	81 e0       	ldi	r24, 0x01	; 1
+ 27e:	83 bf       	out	0x33, r24	; 51
+ 280:	78 c0       	rjmp	.+240    	; 0x372 <pwm_init+0x144>
+		}
+		else if(NUM_REQUIRED_TICKS_8_PRE < 255) //apply the frequency formula on prescaler = 8 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler = 8 for it) we have to increase the prescaler and apply the formulA again
+ 282:	d7 01       	movw	r26, r14
+ 284:	c6 01       	movw	r24, r12
+ 286:	88 0f       	add	r24, r24
+ 288:	99 1f       	adc	r25, r25
+ 28a:	aa 1f       	adc	r26, r26
+ 28c:	bb 1f       	adc	r27, r27
+ 28e:	88 0f       	add	r24, r24
+ 290:	99 1f       	adc	r25, r25
+ 292:	aa 1f       	adc	r26, r26
+ 294:	bb 1f       	adc	r27, r27
+ 296:	9c 01       	movw	r18, r24
+ 298:	ad 01       	movw	r20, r26
+ 29a:	22 0f       	add	r18, r18
+ 29c:	33 1f       	adc	r19, r19
+ 29e:	44 1f       	adc	r20, r20
+ 2a0:	55 1f       	adc	r21, r21
+ 2a2:	60 e0       	ldi	r22, 0x00	; 0
+ 2a4:	72 e1       	ldi	r23, 0x12	; 18
+ 2a6:	8a e7       	ldi	r24, 0x7A	; 122
+ 2a8:	90 e0       	ldi	r25, 0x00	; 0
+ 2aa:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 2ae:	2f 3f       	cpi	r18, 0xFF	; 255
+ 2b0:	31 05       	cpc	r19, r1
+ 2b2:	41 05       	cpc	r20, r1
+ 2b4:	51 05       	cpc	r21, r1
+ 2b6:	20 f4       	brcc	.+8      	; 0x2c0 <pwm_init+0x92>
+		{
+			TCCR0 |= (1<<CS01); //
+ 2b8:	83 b7       	in	r24, 0x33	; 51
+ 2ba:	82 60       	ori	r24, 0x02	; 2
+ 2bc:	83 bf       	out	0x33, r24	; 51
+ 2be:	59 c0       	rjmp	.+178    	; 0x372 <pwm_init+0x144>
+		}
+		else if(NUM_REQUIRED_TICKS_64_PRE < 255)//apply the frequency formula on prescaler = 64 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler=64 for it) we have to increase the prescaler and apply the formulA again
+ 2c0:	d7 01       	movw	r26, r14
+ 2c2:	c6 01       	movw	r24, r12
+ 2c4:	88 0f       	add	r24, r24
+ 2c6:	99 1f       	adc	r25, r25
+ 2c8:	aa 1f       	adc	r26, r26
+ 2ca:	bb 1f       	adc	r27, r27
+ 2cc:	88 0f       	add	r24, r24
+ 2ce:	99 1f       	adc	r25, r25
+ 2d0:	aa 1f       	adc	r26, r26
+ 2d2:	bb 1f       	adc	r27, r27
+ 2d4:	88 0f       	add	r24, r24
+ 2d6:	99 1f       	adc	r25, r25
+ 2d8:	aa 1f       	adc	r26, r26
+ 2da:	bb 1f       	adc	r27, r27
+ 2dc:	88 0f       	add	r24, r24
+ 2de:	99 1f       	adc	r25, r25
+ 2e0:	aa 1f       	adc	r26, r26
+ 2e2:	bb 1f       	adc	r27, r27
+ 2e4:	9c 01       	movw	r18, r24
+ 2e6:	ad 01       	movw	r20, r26
+ 2e8:	22 0f       	add	r18, r18
+ 2ea:	33 1f       	adc	r19, r19
+ 2ec:	44 1f       	adc	r20, r20
+ 2ee:	55 1f       	adc	r21, r21
+ 2f0:	22 0f       	add	r18, r18
+ 2f2:	33 1f       	adc	r19, r19
+ 2f4:	44 1f       	adc	r20, r20
+ 2f6:	55 1f       	adc	r21, r21
+ 2f8:	60 e0       	ldi	r22, 0x00	; 0
+ 2fa:	72 e1       	ldi	r23, 0x12	; 18
+ 2fc:	8a e7       	ldi	r24, 0x7A	; 122
+ 2fe:	90 e0       	ldi	r25, 0x00	; 0
+ 300:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 304:	2f 3f       	cpi	r18, 0xFF	; 255
+ 306:	31 05       	cpc	r19, r1
+ 308:	41 05       	cpc	r20, r1
+ 30a:	51 05       	cpc	r21, r1
+ 30c:	20 f4       	brcc	.+8      	; 0x316 <pwm_init+0xe8>
+		{
+			TCCR0 |= (1<<CS10)|(1<<CS11); //
+ 30e:	83 b7       	in	r24, 0x33	; 51
+ 310:	83 60       	ori	r24, 0x03	; 3
+ 312:	83 bf       	out	0x33, r24	; 51
+ 314:	2e c0       	rjmp	.+92     	; 0x372 <pwm_init+0x144>
+		}
+		else if(NUM_REQUIRED_TICKS_256_PRE < 255)//apply the frequency formula on prescaler = 256 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler=256 for it) we have to increase the prescaler and apply the formulA again
+ 316:	88 24       	eor	r8, r8
+ 318:	9c 2c       	mov	r9, r12
+ 31a:	ad 2c       	mov	r10, r13
+ 31c:	be 2c       	mov	r11, r14
+ 31e:	60 e0       	ldi	r22, 0x00	; 0
+ 320:	72 e1       	ldi	r23, 0x12	; 18
+ 322:	8a e7       	ldi	r24, 0x7A	; 122
+ 324:	90 e0       	ldi	r25, 0x00	; 0
+ 326:	a5 01       	movw	r20, r10
+ 328:	94 01       	movw	r18, r8
+ 32a:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 32e:	2f 3f       	cpi	r18, 0xFF	; 255
+ 330:	31 05       	cpc	r19, r1
+ 332:	41 05       	cpc	r20, r1
+ 334:	51 05       	cpc	r21, r1
+ 336:	20 f4       	brcc	.+8      	; 0x340 <pwm_init+0x112>
+		{
+			TCCR0 |= (1<<CS02); //
+ 338:	83 b7       	in	r24, 0x33	; 51
+ 33a:	84 60       	ori	r24, 0x04	; 4
+ 33c:	83 bf       	out	0x33, r24	; 51
+ 33e:	19 c0       	rjmp	.+50     	; 0x372 <pwm_init+0x144>
+		}
+		else if(NUM_REQUIRED_TICKS_1024_PRE < 255)//apply the frequency formulA on prescaler=1 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler=1 for it) we have to increase the prescaler and apply the formulA again
+ 340:	a7 01       	movw	r20, r14
+ 342:	96 01       	movw	r18, r12
+ 344:	01 2e       	mov	r0, r17
+ 346:	1a e0       	ldi	r17, 0x0A	; 10
+ 348:	22 0f       	add	r18, r18
+ 34a:	33 1f       	adc	r19, r19
+ 34c:	44 1f       	adc	r20, r20
+ 34e:	55 1f       	adc	r21, r21
+ 350:	1a 95       	dec	r17
+ 352:	d1 f7       	brne	.-12     	; 0x348 <pwm_init+0x11a>
+ 354:	10 2d       	mov	r17, r0
+ 356:	60 e0       	ldi	r22, 0x00	; 0
+ 358:	72 e1       	ldi	r23, 0x12	; 18
+ 35a:	8a e7       	ldi	r24, 0x7A	; 122
+ 35c:	90 e0       	ldi	r25, 0x00	; 0
+ 35e:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 362:	2f 3f       	cpi	r18, 0xFF	; 255
+ 364:	31 05       	cpc	r19, r1
+ 366:	41 05       	cpc	r20, r1
+ 368:	51 05       	cpc	r21, r1
+ 36a:	18 f4       	brcc	.+6      	; 0x372 <pwm_init+0x144>
+		{
+			TCCR0 |= (1<<CS00)|(1<<CS02);
+ 36c:	83 b7       	in	r24, 0x33	; 51
+ 36e:	85 60       	ori	r24, 0x05	; 5
+ 370:	83 bf       	out	0x33, r24	; 51
+		}
+
+		TCCR0 |= (1<<WGM00) | (1<<WGM01); // SET THE BIT (FAST PWM WITH ICR1 AS TOP)
+ 372:	83 b7       	in	r24, 0x33	; 51
+ 374:	88 64       	ori	r24, 0x48	; 72
+ 376:	83 bf       	out	0x33, r24	; 51
+ 378:	81 2f       	mov	r24, r17
+ 37a:	86 70       	andi	r24, 0x06	; 6
+	}
+	
+	if ((pwm_no & (PWM1)) || (pwm_no & (PWM2)))
+ 37c:	09 f4       	brne	.+2      	; 0x380 <pwm_init+0x152>
+ 37e:	a7 c0       	rjmp	.+334    	; 0x4ce <pwm_init+0x2a0>
+	{
+		TCCR1A &= ~(0x07); // clear any previous pre scalers
+ 380:	8f b5       	in	r24, 0x2f	; 47
+ 382:	88 7f       	andi	r24, 0xF8	; 248
+ 384:	8f bd       	out	0x2f, r24	; 47
+		uint16_t ICR1_buffer = NUM_REQUIRED_TICKS_NO_PRE; // default value
+ 386:	6e 01       	movw	r12, r28
+ 388:	e1 2c       	mov	r14, r1
+ 38a:	f1 2c       	mov	r15, r1
+ 38c:	60 e0       	ldi	r22, 0x00	; 0
+ 38e:	72 e1       	ldi	r23, 0x12	; 18
+ 390:	8a e7       	ldi	r24, 0x7A	; 122
+ 392:	90 e0       	ldi	r25, 0x00	; 0
+ 394:	a7 01       	movw	r20, r14
+ 396:	96 01       	movw	r18, r12
+ 398:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 39c:	02 2f       	mov	r16, r18
+ 39e:	b3 2e       	mov	r11, r19
+		if(NUM_REQUIRED_TICKS_NO_PRE < (uint32_t)65535) //apply the frequency formula on prescaler = 1 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler=1 for it) we have to increase the prescaler and apply the formulA again
+ 3a0:	2f 3f       	cpi	r18, 0xFF	; 255
+ 3a2:	3f 4f       	sbci	r19, 0xFF	; 255
+ 3a4:	41 05       	cpc	r20, r1
+ 3a6:	51 05       	cpc	r21, r1
+ 3a8:	18 f4       	brcc	.+6      	; 0x3b0 <pwm_init+0x182>
+		{
+			TCCR1B = (1<<CS10);
+ 3aa:	81 e0       	ldi	r24, 0x01	; 1
+ 3ac:	8e bd       	out	0x2e, r24	; 46
+ 3ae:	84 c0       	rjmp	.+264    	; 0x4b8 <pwm_init+0x28a>
+			ICR1_buffer = NUM_REQUIRED_TICKS_NO_PRE;
+		}
+		else if(NUM_REQUIRED_TICKS_8_PRE < (uint32_t)65535) //apply the frequency formulA on prescaler = 8 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler = 8 for it) we have to increase the prescaler and apply the formulA again
+ 3b0:	d7 01       	movw	r26, r14
+ 3b2:	c6 01       	movw	r24, r12
+ 3b4:	88 0f       	add	r24, r24
+ 3b6:	99 1f       	adc	r25, r25
+ 3b8:	aa 1f       	adc	r26, r26
+ 3ba:	bb 1f       	adc	r27, r27
+ 3bc:	88 0f       	add	r24, r24
+ 3be:	99 1f       	adc	r25, r25
+ 3c0:	aa 1f       	adc	r26, r26
+ 3c2:	bb 1f       	adc	r27, r27
+ 3c4:	9c 01       	movw	r18, r24
+ 3c6:	ad 01       	movw	r20, r26
+ 3c8:	22 0f       	add	r18, r18
+ 3ca:	33 1f       	adc	r19, r19
+ 3cc:	44 1f       	adc	r20, r20
+ 3ce:	55 1f       	adc	r21, r21
+ 3d0:	60 e0       	ldi	r22, 0x00	; 0
+ 3d2:	72 e1       	ldi	r23, 0x12	; 18
+ 3d4:	8a e7       	ldi	r24, 0x7A	; 122
+ 3d6:	90 e0       	ldi	r25, 0x00	; 0
+ 3d8:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 3dc:	2f 3f       	cpi	r18, 0xFF	; 255
+ 3de:	8f ef       	ldi	r24, 0xFF	; 255
+ 3e0:	38 07       	cpc	r19, r24
+ 3e2:	41 05       	cpc	r20, r1
+ 3e4:	51 05       	cpc	r21, r1
+ 3e6:	30 f4       	brcc	.+12     	; 0x3f4 <pwm_init+0x1c6>
+		{
+			TCCR1B |= (1<<CS11); //
+ 3e8:	8e b5       	in	r24, 0x2e	; 46
+ 3ea:	82 60       	ori	r24, 0x02	; 2
+ 3ec:	8e bd       	out	0x2e, r24	; 46
+			ICR1_buffer = NUM_REQUIRED_TICKS_8_PRE;
+ 3ee:	02 2f       	mov	r16, r18
+ 3f0:	b3 2e       	mov	r11, r19
+ 3f2:	62 c0       	rjmp	.+196    	; 0x4b8 <pwm_init+0x28a>
+		}
+		else if(NUM_REQUIRED_TICKS_64_PRE < (uint32_t)65535)//apply the frequency formulA on prescaler = 64 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler=64 for it) we have to increase the prescaler and apply the formulA again
+ 3f4:	d7 01       	movw	r26, r14
+ 3f6:	c6 01       	movw	r24, r12
+ 3f8:	88 0f       	add	r24, r24
+ 3fa:	99 1f       	adc	r25, r25
+ 3fc:	aa 1f       	adc	r26, r26
+ 3fe:	bb 1f       	adc	r27, r27
+ 400:	88 0f       	add	r24, r24
+ 402:	99 1f       	adc	r25, r25
+ 404:	aa 1f       	adc	r26, r26
+ 406:	bb 1f       	adc	r27, r27
+ 408:	88 0f       	add	r24, r24
+ 40a:	99 1f       	adc	r25, r25
+ 40c:	aa 1f       	adc	r26, r26
+ 40e:	bb 1f       	adc	r27, r27
+ 410:	88 0f       	add	r24, r24
+ 412:	99 1f       	adc	r25, r25
+ 414:	aa 1f       	adc	r26, r26
+ 416:	bb 1f       	adc	r27, r27
+ 418:	9c 01       	movw	r18, r24
+ 41a:	ad 01       	movw	r20, r26
+ 41c:	22 0f       	add	r18, r18
+ 41e:	33 1f       	adc	r19, r19
+ 420:	44 1f       	adc	r20, r20
+ 422:	55 1f       	adc	r21, r21
+ 424:	22 0f       	add	r18, r18
+ 426:	33 1f       	adc	r19, r19
+ 428:	44 1f       	adc	r20, r20
+ 42a:	55 1f       	adc	r21, r21
+ 42c:	60 e0       	ldi	r22, 0x00	; 0
+ 42e:	72 e1       	ldi	r23, 0x12	; 18
+ 430:	8a e7       	ldi	r24, 0x7A	; 122
+ 432:	90 e0       	ldi	r25, 0x00	; 0
+ 434:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 438:	2f 3f       	cpi	r18, 0xFF	; 255
+ 43a:	8f ef       	ldi	r24, 0xFF	; 255
+ 43c:	38 07       	cpc	r19, r24
+ 43e:	41 05       	cpc	r20, r1
+ 440:	51 05       	cpc	r21, r1
+ 442:	30 f4       	brcc	.+12     	; 0x450 <pwm_init+0x222>
+		{
+			TCCR1B |= (1<<CS10)|(1<<CS11); //
+ 444:	8e b5       	in	r24, 0x2e	; 46
+ 446:	83 60       	ori	r24, 0x03	; 3
+ 448:	8e bd       	out	0x2e, r24	; 46
+			ICR1_buffer = NUM_REQUIRED_TICKS_64_PRE;
+ 44a:	02 2f       	mov	r16, r18
+ 44c:	b3 2e       	mov	r11, r19
+ 44e:	34 c0       	rjmp	.+104    	; 0x4b8 <pwm_init+0x28a>
+		}
+		else if(NUM_REQUIRED_TICKS_256_PRE < (uint32_t)65535)//apply the frequency formulA on prescaler=256 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler=256 for it) we have to increase the prescaler and apply the formulA again
+ 450:	44 24       	eor	r4, r4
+ 452:	5c 2c       	mov	r5, r12
+ 454:	6d 2c       	mov	r6, r13
+ 456:	7e 2c       	mov	r7, r14
+ 458:	60 e0       	ldi	r22, 0x00	; 0
+ 45a:	72 e1       	ldi	r23, 0x12	; 18
+ 45c:	8a e7       	ldi	r24, 0x7A	; 122
+ 45e:	90 e0       	ldi	r25, 0x00	; 0
+ 460:	a3 01       	movw	r20, r6
+ 462:	92 01       	movw	r18, r4
+ 464:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 468:	2f 3f       	cpi	r18, 0xFF	; 255
+ 46a:	8f ef       	ldi	r24, 0xFF	; 255
+ 46c:	38 07       	cpc	r19, r24
+ 46e:	41 05       	cpc	r20, r1
+ 470:	51 05       	cpc	r21, r1
+ 472:	30 f4       	brcc	.+12     	; 0x480 <pwm_init+0x252>
+		{
+			TCCR1B |= (1<<CS12); //
+ 474:	8e b5       	in	r24, 0x2e	; 46
+ 476:	84 60       	ori	r24, 0x04	; 4
+ 478:	8e bd       	out	0x2e, r24	; 46
+			ICR1_buffer = NUM_REQUIRED_TICKS_256_PRE;
+ 47a:	02 2f       	mov	r16, r18
+ 47c:	b3 2e       	mov	r11, r19
+ 47e:	1c c0       	rjmp	.+56     	; 0x4b8 <pwm_init+0x28a>
+		}
+		else if(NUM_REQUIRED_TICKS_1024_PRE < (uint16_t)65535)//apply the frequency formulA on prescaler=1 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler=1 for it) we have to increase the prescaler and apply the formulA again
+ 480:	a7 01       	movw	r20, r14
+ 482:	96 01       	movw	r18, r12
+ 484:	01 2e       	mov	r0, r17
+ 486:	1a e0       	ldi	r17, 0x0A	; 10
+ 488:	22 0f       	add	r18, r18
+ 48a:	33 1f       	adc	r19, r19
+ 48c:	44 1f       	adc	r20, r20
+ 48e:	55 1f       	adc	r21, r21
+ 490:	1a 95       	dec	r17
+ 492:	d1 f7       	brne	.-12     	; 0x488 <pwm_init+0x25a>
+ 494:	10 2d       	mov	r17, r0
+ 496:	60 e0       	ldi	r22, 0x00	; 0
+ 498:	72 e1       	ldi	r23, 0x12	; 18
+ 49a:	8a e7       	ldi	r24, 0x7A	; 122
+ 49c:	90 e0       	ldi	r25, 0x00	; 0
+ 49e:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 4a2:	2f 3f       	cpi	r18, 0xFF	; 255
+ 4a4:	8f ef       	ldi	r24, 0xFF	; 255
+ 4a6:	38 07       	cpc	r19, r24
+ 4a8:	41 05       	cpc	r20, r1
+ 4aa:	51 05       	cpc	r21, r1
+ 4ac:	28 f4       	brcc	.+10     	; 0x4b8 <pwm_init+0x28a>
+		{
+			TCCR1B |= (1<<CS10)|(1<<CS12); //
+ 4ae:	8e b5       	in	r24, 0x2e	; 46
+ 4b0:	85 60       	ori	r24, 0x05	; 5
+ 4b2:	8e bd       	out	0x2e, r24	; 46
+			ICR1_buffer = NUM_REQUIRED_TICKS_1024_PRE;
+ 4b4:	02 2f       	mov	r16, r18
+ 4b6:	b3 2e       	mov	r11, r19
+		}
+
+		ICR1H=ICR1_buffer >> 8;
+ 4b8:	b7 bc       	out	0x27, r11	; 39
+		ICR1L=(ICR1_buffer & 0x00ff);
+ 4ba:	06 bd       	out	0x26, r16	; 38
+		TCCR1B |= (1<<WGM12)|(1<<WGM13); // SET THE BIT (FAST PWM WITH ICR1 AS TOP)
+ 4bc:	8e b5       	in	r24, 0x2e	; 46
+ 4be:	88 61       	ori	r24, 0x18	; 24
+ 4c0:	8e bd       	out	0x2e, r24	; 46
+		TCCR1A |= (1<<WGM11);
+ 4c2:	8f b5       	in	r24, 0x2f	; 47
+ 4c4:	82 60       	ori	r24, 0x02	; 2
+ 4c6:	8f bd       	out	0x2f, r24	; 47
+		TCCR1A &= ~(1 << WGM10);
+ 4c8:	8f b5       	in	r24, 0x2f	; 47
+ 4ca:	8e 7f       	andi	r24, 0xFE	; 254
+ 4cc:	8f bd       	out	0x2f, r24	; 47
+	}
+	
+	
+	
+	if (pwm_no & PWM3)
+ 4ce:	13 ff       	sbrs	r17, 3
+ 4d0:	e7 c0       	rjmp	.+462    	; 0x6a0 <pwm_init+0x472>
+	{
+		TCCR2 &= ~(0x07); // clear any previous pre scalers
+ 4d2:	85 b5       	in	r24, 0x25	; 37
+ 4d4:	88 7f       	andi	r24, 0xF8	; 248
+ 4d6:	85 bd       	out	0x25, r24	; 37
+		
+		if(NUM_REQUIRED_TICKS_NO_PRE < 255) //apply the frequency formula on prescaler = 1 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler=1 for it) we have to increase the prescaler and apply the formulA again
+ 4d8:	6e 01       	movw	r12, r28
+ 4da:	e1 2c       	mov	r14, r1
+ 4dc:	f1 2c       	mov	r15, r1
+ 4de:	60 e0       	ldi	r22, 0x00	; 0
+ 4e0:	72 e1       	ldi	r23, 0x12	; 18
+ 4e2:	8a e7       	ldi	r24, 0x7A	; 122
+ 4e4:	90 e0       	ldi	r25, 0x00	; 0
+ 4e6:	a7 01       	movw	r20, r14
+ 4e8:	96 01       	movw	r18, r12
+ 4ea:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 4ee:	2f 3f       	cpi	r18, 0xFF	; 255
+ 4f0:	31 05       	cpc	r19, r1
+ 4f2:	41 05       	cpc	r20, r1
+ 4f4:	51 05       	cpc	r21, r1
+ 4f6:	18 f4       	brcc	.+6      	; 0x4fe <pwm_init+0x2d0>
+		{
+			TCCR2 = (1 << CS20);
+ 4f8:	81 e0       	ldi	r24, 0x01	; 1
+ 4fa:	85 bd       	out	0x25, r24	; 37
+ 4fc:	ce c0       	rjmp	.+412    	; 0x69a <pwm_init+0x46c>
+		}
+		else if(NUM_REQUIRED_TICKS_8_PRE < 255) //apply the frequency formula on prescaler = 8 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler = 8 for it) we have to increase the prescaler and apply the formulA again
+ 4fe:	d7 01       	movw	r26, r14
+ 500:	c6 01       	movw	r24, r12
+ 502:	88 0f       	add	r24, r24
+ 504:	99 1f       	adc	r25, r25
+ 506:	aa 1f       	adc	r26, r26
+ 508:	bb 1f       	adc	r27, r27
+ 50a:	88 0f       	add	r24, r24
+ 50c:	99 1f       	adc	r25, r25
+ 50e:	aa 1f       	adc	r26, r26
+ 510:	bb 1f       	adc	r27, r27
+ 512:	9c 01       	movw	r18, r24
+ 514:	ad 01       	movw	r20, r26
+ 516:	22 0f       	add	r18, r18
+ 518:	33 1f       	adc	r19, r19
+ 51a:	44 1f       	adc	r20, r20
+ 51c:	55 1f       	adc	r21, r21
+ 51e:	60 e0       	ldi	r22, 0x00	; 0
+ 520:	72 e1       	ldi	r23, 0x12	; 18
+ 522:	8a e7       	ldi	r24, 0x7A	; 122
+ 524:	90 e0       	ldi	r25, 0x00	; 0
+ 526:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 52a:	2f 3f       	cpi	r18, 0xFF	; 255
+ 52c:	31 05       	cpc	r19, r1
+ 52e:	41 05       	cpc	r20, r1
+ 530:	51 05       	cpc	r21, r1
+ 532:	20 f4       	brcc	.+8      	; 0x53c <pwm_init+0x30e>
+		{
+			TCCR2 |= (1<<CS21); //
+ 534:	85 b5       	in	r24, 0x25	; 37
+ 536:	82 60       	ori	r24, 0x02	; 2
+ 538:	85 bd       	out	0x25, r24	; 37
+ 53a:	af c0       	rjmp	.+350    	; 0x69a <pwm_init+0x46c>
+		}
+		else if(NUM_REQUIRED_TICKS_32_PRE < 255) //apply the frequency formula on prescaler = 8 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler = 8 for it) we have to increase the prescaler and apply the formulA again
+ 53c:	d7 01       	movw	r26, r14
+ 53e:	c6 01       	movw	r24, r12
+ 540:	88 0f       	add	r24, r24
+ 542:	99 1f       	adc	r25, r25
+ 544:	aa 1f       	adc	r26, r26
+ 546:	bb 1f       	adc	r27, r27
+ 548:	88 0f       	add	r24, r24
+ 54a:	99 1f       	adc	r25, r25
+ 54c:	aa 1f       	adc	r26, r26
+ 54e:	bb 1f       	adc	r27, r27
+ 550:	88 0f       	add	r24, r24
+ 552:	99 1f       	adc	r25, r25
+ 554:	aa 1f       	adc	r26, r26
+ 556:	bb 1f       	adc	r27, r27
+ 558:	88 0f       	add	r24, r24
+ 55a:	99 1f       	adc	r25, r25
+ 55c:	aa 1f       	adc	r26, r26
+ 55e:	bb 1f       	adc	r27, r27
+ 560:	9c 01       	movw	r18, r24
+ 562:	ad 01       	movw	r20, r26
+ 564:	22 0f       	add	r18, r18
+ 566:	33 1f       	adc	r19, r19
+ 568:	44 1f       	adc	r20, r20
+ 56a:	55 1f       	adc	r21, r21
+ 56c:	60 e0       	ldi	r22, 0x00	; 0
+ 56e:	72 e1       	ldi	r23, 0x12	; 18
+ 570:	8a e7       	ldi	r24, 0x7A	; 122
+ 572:	90 e0       	ldi	r25, 0x00	; 0
+ 574:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 578:	2f 3f       	cpi	r18, 0xFF	; 255
+ 57a:	31 05       	cpc	r19, r1
+ 57c:	41 05       	cpc	r20, r1
+ 57e:	51 05       	cpc	r21, r1
+ 580:	20 f4       	brcc	.+8      	; 0x58a <pwm_init+0x35c>
+		{
+			TCCR2 |= (1 << CS20) | (1 << CS21); //
+ 582:	85 b5       	in	r24, 0x25	; 37
+ 584:	83 60       	ori	r24, 0x03	; 3
+ 586:	85 bd       	out	0x25, r24	; 37
+ 588:	88 c0       	rjmp	.+272    	; 0x69a <pwm_init+0x46c>
+		}
+		else if(NUM_REQUIRED_TICKS_64_PRE < 255)//apply the frequency formula on prescaler = 64 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler=64 for it) we have to increase the prescaler and apply the formulA again
+ 58a:	d7 01       	movw	r26, r14
+ 58c:	c6 01       	movw	r24, r12
+ 58e:	88 0f       	add	r24, r24
+ 590:	99 1f       	adc	r25, r25
+ 592:	aa 1f       	adc	r26, r26
+ 594:	bb 1f       	adc	r27, r27
+ 596:	88 0f       	add	r24, r24
+ 598:	99 1f       	adc	r25, r25
+ 59a:	aa 1f       	adc	r26, r26
+ 59c:	bb 1f       	adc	r27, r27
+ 59e:	88 0f       	add	r24, r24
+ 5a0:	99 1f       	adc	r25, r25
+ 5a2:	aa 1f       	adc	r26, r26
+ 5a4:	bb 1f       	adc	r27, r27
+ 5a6:	88 0f       	add	r24, r24
+ 5a8:	99 1f       	adc	r25, r25
+ 5aa:	aa 1f       	adc	r26, r26
+ 5ac:	bb 1f       	adc	r27, r27
+ 5ae:	9c 01       	movw	r18, r24
+ 5b0:	ad 01       	movw	r20, r26
+ 5b2:	22 0f       	add	r18, r18
+ 5b4:	33 1f       	adc	r19, r19
+ 5b6:	44 1f       	adc	r20, r20
+ 5b8:	55 1f       	adc	r21, r21
+ 5ba:	22 0f       	add	r18, r18
+ 5bc:	33 1f       	adc	r19, r19
+ 5be:	44 1f       	adc	r20, r20
+ 5c0:	55 1f       	adc	r21, r21
+ 5c2:	60 e0       	ldi	r22, 0x00	; 0
+ 5c4:	72 e1       	ldi	r23, 0x12	; 18
+ 5c6:	8a e7       	ldi	r24, 0x7A	; 122
+ 5c8:	90 e0       	ldi	r25, 0x00	; 0
+ 5ca:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 5ce:	2f 3f       	cpi	r18, 0xFF	; 255
+ 5d0:	31 05       	cpc	r19, r1
+ 5d2:	41 05       	cpc	r20, r1
+ 5d4:	51 05       	cpc	r21, r1
+ 5d6:	20 f4       	brcc	.+8      	; 0x5e0 <pwm_init+0x3b2>
+		{
+			TCCR2 |= (1 << CS22); //
+ 5d8:	85 b5       	in	r24, 0x25	; 37
+ 5da:	84 60       	ori	r24, 0x04	; 4
+ 5dc:	85 bd       	out	0x25, r24	; 37
+ 5de:	5d c0       	rjmp	.+186    	; 0x69a <pwm_init+0x46c>
+		}
+		else if(NUM_REQUIRED_TICKS_128_PRE < 255)//apply the frequency formula on prescaler = 256 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler=256 for it) we have to increase the prescaler and apply the formulA again
+ 5e0:	d7 01       	movw	r26, r14
+ 5e2:	c6 01       	movw	r24, r12
+ 5e4:	88 0f       	add	r24, r24
+ 5e6:	99 1f       	adc	r25, r25
+ 5e8:	aa 1f       	adc	r26, r26
+ 5ea:	bb 1f       	adc	r27, r27
+ 5ec:	88 0f       	add	r24, r24
+ 5ee:	99 1f       	adc	r25, r25
+ 5f0:	aa 1f       	adc	r26, r26
+ 5f2:	bb 1f       	adc	r27, r27
+ 5f4:	88 0f       	add	r24, r24
+ 5f6:	99 1f       	adc	r25, r25
+ 5f8:	aa 1f       	adc	r26, r26
+ 5fa:	bb 1f       	adc	r27, r27
+ 5fc:	88 0f       	add	r24, r24
+ 5fe:	99 1f       	adc	r25, r25
+ 600:	aa 1f       	adc	r26, r26
+ 602:	bb 1f       	adc	r27, r27
+ 604:	88 0f       	add	r24, r24
+ 606:	99 1f       	adc	r25, r25
+ 608:	aa 1f       	adc	r26, r26
+ 60a:	bb 1f       	adc	r27, r27
+ 60c:	88 0f       	add	r24, r24
+ 60e:	99 1f       	adc	r25, r25
+ 610:	aa 1f       	adc	r26, r26
+ 612:	bb 1f       	adc	r27, r27
+ 614:	9c 01       	movw	r18, r24
+ 616:	ad 01       	movw	r20, r26
+ 618:	22 0f       	add	r18, r18
+ 61a:	33 1f       	adc	r19, r19
+ 61c:	44 1f       	adc	r20, r20
+ 61e:	55 1f       	adc	r21, r21
+ 620:	60 e0       	ldi	r22, 0x00	; 0
+ 622:	72 e1       	ldi	r23, 0x12	; 18
+ 624:	8a e7       	ldi	r24, 0x7A	; 122
+ 626:	90 e0       	ldi	r25, 0x00	; 0
+ 628:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 62c:	2f 3f       	cpi	r18, 0xFF	; 255
+ 62e:	31 05       	cpc	r19, r1
+ 630:	41 05       	cpc	r20, r1
+ 632:	51 05       	cpc	r21, r1
+ 634:	20 f4       	brcc	.+8      	; 0x63e <pwm_init+0x410>
+		{
+			TCCR2 |= (1 << CS20) | (1 << CS22); //
+ 636:	85 b5       	in	r24, 0x25	; 37
+ 638:	85 60       	ori	r24, 0x05	; 5
+ 63a:	85 bd       	out	0x25, r24	; 37
+ 63c:	2e c0       	rjmp	.+92     	; 0x69a <pwm_init+0x46c>
+
+		}
+		else if(NUM_REQUIRED_TICKS_256_PRE < 255)//apply the frequency formula on prescaler = 256 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler=256 for it) we have to increase the prescaler and apply the formulA again
+ 63e:	3e 2d       	mov	r19, r14
+ 640:	2d 2d       	mov	r18, r13
+ 642:	1c 2d       	mov	r17, r12
+ 644:	00 27       	eor	r16, r16
+ 646:	60 e0       	ldi	r22, 0x00	; 0
+ 648:	72 e1       	ldi	r23, 0x12	; 18
+ 64a:	8a e7       	ldi	r24, 0x7A	; 122
+ 64c:	90 e0       	ldi	r25, 0x00	; 0
+ 64e:	a9 01       	movw	r20, r18
+ 650:	98 01       	movw	r18, r16
+ 652:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 656:	2f 3f       	cpi	r18, 0xFF	; 255
+ 658:	31 05       	cpc	r19, r1
+ 65a:	41 05       	cpc	r20, r1
+ 65c:	51 05       	cpc	r21, r1
+ 65e:	20 f4       	brcc	.+8      	; 0x668 <pwm_init+0x43a>
+		{
+			TCCR2 |= (1 << CS21) | (1 << CS22); //
+ 660:	85 b5       	in	r24, 0x25	; 37
+ 662:	86 60       	ori	r24, 0x06	; 6
+ 664:	85 bd       	out	0x25, r24	; 37
+ 666:	19 c0       	rjmp	.+50     	; 0x69a <pwm_init+0x46c>
+		}
+		else if(NUM_REQUIRED_TICKS_1024_PRE < 255)//apply the frequency formulA on prescaler=1 and get ICR1 value if it's larger than what ICR1 register can hold(this means that the frequency we want too low to use prescaler=1 for it) we have to increase the prescaler and apply the formulA again
+ 668:	a7 01       	movw	r20, r14
+ 66a:	96 01       	movw	r18, r12
+ 66c:	01 2e       	mov	r0, r17
+ 66e:	1a e0       	ldi	r17, 0x0A	; 10
+ 670:	22 0f       	add	r18, r18
+ 672:	33 1f       	adc	r19, r19
+ 674:	44 1f       	adc	r20, r20
+ 676:	55 1f       	adc	r21, r21
+ 678:	1a 95       	dec	r17
+ 67a:	d1 f7       	brne	.-12     	; 0x670 <pwm_init+0x442>
+ 67c:	10 2d       	mov	r17, r0
+ 67e:	60 e0       	ldi	r22, 0x00	; 0
+ 680:	72 e1       	ldi	r23, 0x12	; 18
+ 682:	8a e7       	ldi	r24, 0x7A	; 122
+ 684:	90 e0       	ldi	r25, 0x00	; 0
+ 686:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 68a:	2f 3f       	cpi	r18, 0xFF	; 255
+ 68c:	31 05       	cpc	r19, r1
+ 68e:	41 05       	cpc	r20, r1
+ 690:	51 05       	cpc	r21, r1
+ 692:	18 f4       	brcc	.+6      	; 0x69a <pwm_init+0x46c>
+		{
+			TCCR2 |= (1 << CS20) | (1 << CS22) | (1 << CS21);    
+ 694:	85 b5       	in	r24, 0x25	; 37
+ 696:	87 60       	ori	r24, 0x07	; 7
+ 698:	85 bd       	out	0x25, r24	; 37
+		}
+
+		TCCR2 |= (1<<WGM20) | (1<<WGM21); // SET THE BIT (FAST PWM WITH ICR1 AS TOP)
+ 69a:	85 b5       	in	r24, 0x25	; 37
+ 69c:	88 64       	ori	r24, 0x48	; 72
+ 69e:	85 bd       	out	0x25, r24	; 37
+	}
+	
+}
+ 6a0:	df 91       	pop	r29
+ 6a2:	cf 91       	pop	r28
+ 6a4:	1f 91       	pop	r17
+ 6a6:	0f 91       	pop	r16
+ 6a8:	ff 90       	pop	r15
+ 6aa:	ef 90       	pop	r14
+ 6ac:	df 90       	pop	r13
+ 6ae:	cf 90       	pop	r12
+ 6b0:	bf 90       	pop	r11
+ 6b2:	af 90       	pop	r10
+ 6b4:	9f 90       	pop	r9
+ 6b6:	8f 90       	pop	r8
+ 6b8:	7f 90       	pop	r7
+ 6ba:	6f 90       	pop	r6
+ 6bc:	5f 90       	pop	r5
+ 6be:	4f 90       	pop	r4
+ 6c0:	08 95       	ret
+
+000006c2 <pwm_start>:
+
+void pwm_start(uint8_t pwm_no)
+{
+ 6c2:	cf 93       	push	r28
+ 6c4:	c8 2f       	mov	r28, r24
+	if (pwm_no & PWM0)
+ 6c6:	80 ff       	sbrs	r24, 0
+ 6c8:	0a c0       	rjmp	.+20     	; 0x6de <pwm_start+0x1c>
+	{
+		DIO_SET_STATE(DIO_OC0, DIO_OUTPUT);
+ 6ca:	61 e0       	ldi	r22, 0x01	; 1
+ 6cc:	8b e0       	ldi	r24, 0x0B	; 11
+ 6ce:	0e 94 36 00 	call	0x6c	; 0x6c <DIO_SetPinDir>
+		TCCR0 |= (1 << COM01);
+ 6d2:	83 b7       	in	r24, 0x33	; 51
+ 6d4:	80 62       	ori	r24, 0x20	; 32
+ 6d6:	83 bf       	out	0x33, r24	; 51
+		TCCR0 &= ~(1<<COM00);
+ 6d8:	83 b7       	in	r24, 0x33	; 51
+ 6da:	8f 7e       	andi	r24, 0xEF	; 239
+ 6dc:	83 bf       	out	0x33, r24	; 51
+	}
+	
+	if (pwm_no & PWM1)
+ 6de:	c1 ff       	sbrs	r28, 1
+ 6e0:	0a c0       	rjmp	.+20     	; 0x6f6 <pwm_start+0x34>
+	{
+		DIO_SET_STATE(DIO_OC1A, DIO_OUTPUT);
+ 6e2:	61 e0       	ldi	r22, 0x01	; 1
+ 6e4:	8d e1       	ldi	r24, 0x1D	; 29
+ 6e6:	0e 94 36 00 	call	0x6c	; 0x6c <DIO_SetPinDir>
+		TCCR1A &= ~(1 << COM1A0);
+ 6ea:	8f b5       	in	r24, 0x2f	; 47
+ 6ec:	8f 7b       	andi	r24, 0xBF	; 191
+ 6ee:	8f bd       	out	0x2f, r24	; 47
+		TCCR1A |= (1 << COM1A1); // SET THE BIT( START CLEAR ON COMPARE) (FAST PWM WITH ICR1 AS TOP) respectively
+ 6f0:	8f b5       	in	r24, 0x2f	; 47
+ 6f2:	80 68       	ori	r24, 0x80	; 128
+ 6f4:	8f bd       	out	0x2f, r24	; 47
+	}
+	
+	if (pwm_no & PWM2)
+ 6f6:	c2 ff       	sbrs	r28, 2
+ 6f8:	0a c0       	rjmp	.+20     	; 0x70e <pwm_start+0x4c>
+	{
+		DIO_SET_STATE(DIO_OC1B, DIO_OUTPUT);
+ 6fa:	61 e0       	ldi	r22, 0x01	; 1
+ 6fc:	8c e1       	ldi	r24, 0x1C	; 28
+ 6fe:	0e 94 36 00 	call	0x6c	; 0x6c <DIO_SetPinDir>
+		TCCR1A &= ~(1 << COM1B0);
+ 702:	8f b5       	in	r24, 0x2f	; 47
+ 704:	8f 7e       	andi	r24, 0xEF	; 239
+ 706:	8f bd       	out	0x2f, r24	; 47
+		TCCR1A |= (1 << COM1B1); // SET THE BIT ON (SET ON START, CLEAR ON COMPARE) (FAST PWM WITH ICR1 AS TOP)
+ 708:	8f b5       	in	r24, 0x2f	; 47
+ 70a:	80 62       	ori	r24, 0x20	; 32
+ 70c:	8f bd       	out	0x2f, r24	; 47
+	}
+	
+	if (pwm_no & PWM3)
+ 70e:	c3 ff       	sbrs	r28, 3
+ 710:	0b c0       	rjmp	.+22     	; 0x728 <pwm_start+0x66>
+	{
+		DIO_SET_STATE(DIO_OC2, DIO_OUTPUT);
+ 712:	61 e0       	ldi	r22, 0x01	; 1
+ 714:	8f e1       	ldi	r24, 0x1F	; 31
+ 716:	0e 94 36 00 	call	0x6c	; 0x6c <DIO_SetPinDir>
+		DDRD |= (1 << 7);
+ 71a:	8f 9a       	sbi	0x11, 7	; 17
+		TCCR2 |= (1 << COM21);
+ 71c:	85 b5       	in	r24, 0x25	; 37
+ 71e:	80 62       	ori	r24, 0x20	; 32
+ 720:	85 bd       	out	0x25, r24	; 37
+		TCCR2 &= ~(1 << COM20);
+ 722:	85 b5       	in	r24, 0x25	; 37
+ 724:	8f 7e       	andi	r24, 0xEF	; 239
+ 726:	85 bd       	out	0x25, r24	; 37
+	}
+	
+	
+}
+ 728:	cf 91       	pop	r28
+ 72a:	08 95       	ret
+
+0000072c <pwm_setDuty>:
+
+void pwm_setDuty(uint8_t pwn_no, uint8_t duty_percent)
+{
+ 72c:	cf 93       	push	r28
+ 72e:	df 93       	push	r29
+ 730:	c8 2f       	mov	r28, r24
+ 732:	d6 2f       	mov	r29, r22
+	if (pwn_no & PWM0)
+ 734:	80 ff       	sbrs	r24, 0
+ 736:	19 c0       	rjmp	.+50     	; 0x76a <pwm_setDuty+0x3e>
+	{
+		if (duty_percent == 100) // if the duty cycle is 100% putting OCR1A the same number as as top value will cause A compare and overflow at the same time which only one of the is going to be activated so we put it equal TOP value( which held in ICR1)-1
+ 738:	64 36       	cpi	r22, 0x64	; 100
+ 73a:	29 f4       	brne	.+10     	; 0x746 <pwm_setDuty+0x1a>
+			OCR0 = 255;
+ 73c:	8f ef       	ldi	r24, 0xFF	; 255
+ 73e:	8c bf       	out	0x3c, r24	; 60
+		else
+			OCR0 = (255 * (uint16_t)duty_percent) / 100;
+	}
+	
+	if (pwn_no & PWM1)    
+ 740:	c1 fd       	sbrc	r28, 1
+ 742:	17 c0       	rjmp	.+46     	; 0x772 <pwm_setDuty+0x46>
+ 744:	7d c0       	rjmp	.+250    	; 0x840 <pwm_setDuty+0x114>
+	if (pwn_no & PWM0)
+	{
+		if (duty_percent == 100) // if the duty cycle is 100% putting OCR1A the same number as as top value will cause A compare and overflow at the same time which only one of the is going to be activated so we put it equal TOP value( which held in ICR1)-1
+			OCR0 = 255;
+		else
+			OCR0 = (255 * (uint16_t)duty_percent) / 100;
+ 746:	8f ef       	ldi	r24, 0xFF	; 255
+ 748:	68 9f       	mul	r22, r24
+ 74a:	90 01       	movw	r18, r0
+ 74c:	11 24       	eor	r1, r1
+ 74e:	36 95       	lsr	r19
+ 750:	27 95       	ror	r18
+ 752:	36 95       	lsr	r19
+ 754:	27 95       	ror	r18
+ 756:	ab e7       	ldi	r26, 0x7B	; 123
+ 758:	b4 e1       	ldi	r27, 0x14	; 20
+ 75a:	0e 94 73 04 	call	0x8e6	; 0x8e6 <__umulhisi3>
+ 75e:	96 95       	lsr	r25
+ 760:	87 95       	ror	r24
+ 762:	8c bf       	out	0x3c, r24	; 60
+	}
+	
+	if (pwn_no & PWM1)    
+ 764:	c1 fd       	sbrc	r28, 1
+ 766:	15 c0       	rjmp	.+42     	; 0x792 <pwm_setDuty+0x66>
+ 768:	6e c0       	rjmp	.+220    	; 0x846 <pwm_setDuty+0x11a>
+ 76a:	81 ff       	sbrs	r24, 1
+ 76c:	28 c0       	rjmp	.+80     	; 0x7be <pwm_setDuty+0x92>
+	{
+		if (duty_percent == 100) // if the duty cycle is 100% putting OCR1A the same number as as top value will cause A compare and overflow at the same time which only one of the is going to be activated so we put it equal TOP value( which held in ICR1)-1
+ 76e:	64 36       	cpi	r22, 0x64	; 100
+ 770:	81 f4       	brne	.+32     	; 0x792 <pwm_setDuty+0x66>
+			OCR1A = ((ICR1L) + ((uint16_t)ICR1H << 8)) - 1;
+ 772:	26 b5       	in	r18, 0x26	; 38
+ 774:	97 b5       	in	r25, 0x27	; 39
+ 776:	30 e0       	ldi	r19, 0x00	; 0
+ 778:	21 50       	subi	r18, 0x01	; 1
+ 77a:	31 09       	sbc	r19, r1
+ 77c:	89 2f       	mov	r24, r25
+ 77e:	90 e0       	ldi	r25, 0x00	; 0
+ 780:	98 2f       	mov	r25, r24
+ 782:	88 27       	eor	r24, r24
+ 784:	82 0f       	add	r24, r18
+ 786:	93 1f       	adc	r25, r19
+ 788:	9b bd       	out	0x2b, r25	; 43
+ 78a:	8a bd       	out	0x2a, r24	; 42
+		else
+			OCR1A = ((uint32_t)((ICR1L) + ((uint16_t)ICR1H << 8)) * duty_percent) / 100;
+	}
+	
+	if (pwn_no & PWM2)    
+ 78c:	c2 fd       	sbrc	r28, 2
+ 78e:	1b c0       	rjmp	.+54     	; 0x7c6 <pwm_setDuty+0x9a>
+ 790:	40 c0       	rjmp	.+128    	; 0x812 <pwm_setDuty+0xe6>
+	if (pwn_no & PWM1)    
+	{
+		if (duty_percent == 100) // if the duty cycle is 100% putting OCR1A the same number as as top value will cause A compare and overflow at the same time which only one of the is going to be activated so we put it equal TOP value( which held in ICR1)-1
+			OCR1A = ((ICR1L) + ((uint16_t)ICR1H << 8)) - 1;
+		else
+			OCR1A = ((uint32_t)((ICR1L) + ((uint16_t)ICR1H << 8)) * duty_percent) / 100;
+ 792:	86 b5       	in	r24, 0x26	; 38
+ 794:	27 b5       	in	r18, 0x27	; 39
+ 796:	30 e0       	ldi	r19, 0x00	; 0
+ 798:	32 2f       	mov	r19, r18
+ 79a:	22 27       	eor	r18, r18
+ 79c:	28 0f       	add	r18, r24
+ 79e:	31 1d       	adc	r19, r1
+ 7a0:	ad 2f       	mov	r26, r29
+ 7a2:	b0 e0       	ldi	r27, 0x00	; 0
+ 7a4:	0e 94 73 04 	call	0x8e6	; 0x8e6 <__umulhisi3>
+ 7a8:	24 e6       	ldi	r18, 0x64	; 100
+ 7aa:	30 e0       	ldi	r19, 0x00	; 0
+ 7ac:	40 e0       	ldi	r20, 0x00	; 0
+ 7ae:	50 e0       	ldi	r21, 0x00	; 0
+ 7b0:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 7b4:	3b bd       	out	0x2b, r19	; 43
+ 7b6:	2a bd       	out	0x2a, r18	; 42
+	}
+	
+	if (pwn_no & PWM2)    
+ 7b8:	c2 fd       	sbrc	r28, 2
+ 7ba:	15 c0       	rjmp	.+42     	; 0x7e6 <pwm_setDuty+0xba>
+ 7bc:	2a c0       	rjmp	.+84     	; 0x812 <pwm_setDuty+0xe6>
+ 7be:	82 ff       	sbrs	r24, 2
+ 7c0:	28 c0       	rjmp	.+80     	; 0x812 <pwm_setDuty+0xe6>
+	{
+		if (duty_percent == 100)// if the duty cycle is 100% putting OCR1A the same number as as top value will cause A compare and overflow at the same time which only one of the is going to be activated so we put it equal TOP value( which held in ICR1)-1
+ 7c2:	64 36       	cpi	r22, 0x64	; 100
+ 7c4:	81 f4       	brne	.+32     	; 0x7e6 <pwm_setDuty+0xba>
+			OCR1B = ((ICR1L) + ((uint16_t)ICR1H << 8)) - 1;
+ 7c6:	26 b5       	in	r18, 0x26	; 38
+ 7c8:	97 b5       	in	r25, 0x27	; 39
+ 7ca:	30 e0       	ldi	r19, 0x00	; 0
+ 7cc:	21 50       	subi	r18, 0x01	; 1
+ 7ce:	31 09       	sbc	r19, r1
+ 7d0:	89 2f       	mov	r24, r25
+ 7d2:	90 e0       	ldi	r25, 0x00	; 0
+ 7d4:	98 2f       	mov	r25, r24
+ 7d6:	88 27       	eor	r24, r24
+ 7d8:	82 0f       	add	r24, r18
+ 7da:	93 1f       	adc	r25, r19
+ 7dc:	99 bd       	out	0x29, r25	; 41
+ 7de:	88 bd       	out	0x28, r24	; 40
+		else
+			OCR1B =((uint32_t)((ICR1L) + ((uint16_t)ICR1H << 8))  * duty_percent) / 100;
+	}
+	
+	if (pwn_no & PWM3)
+ 7e0:	c3 fd       	sbrc	r28, 3
+ 7e2:	1b c0       	rjmp	.+54     	; 0x81a <pwm_setDuty+0xee>
+ 7e4:	33 c0       	rjmp	.+102    	; 0x84c <pwm_setDuty+0x120>
+	if (pwn_no & PWM2)    
+	{
+		if (duty_percent == 100)// if the duty cycle is 100% putting OCR1A the same number as as top value will cause A compare and overflow at the same time which only one of the is going to be activated so we put it equal TOP value( which held in ICR1)-1
+			OCR1B = ((ICR1L) + ((uint16_t)ICR1H << 8)) - 1;
+		else
+			OCR1B =((uint32_t)((ICR1L) + ((uint16_t)ICR1H << 8))  * duty_percent) / 100;
+ 7e6:	86 b5       	in	r24, 0x26	; 38
+ 7e8:	27 b5       	in	r18, 0x27	; 39
+ 7ea:	30 e0       	ldi	r19, 0x00	; 0
+ 7ec:	32 2f       	mov	r19, r18
+ 7ee:	22 27       	eor	r18, r18
+ 7f0:	28 0f       	add	r18, r24
+ 7f2:	31 1d       	adc	r19, r1
+ 7f4:	ad 2f       	mov	r26, r29
+ 7f6:	b0 e0       	ldi	r27, 0x00	; 0
+ 7f8:	0e 94 73 04 	call	0x8e6	; 0x8e6 <__umulhisi3>
+ 7fc:	24 e6       	ldi	r18, 0x64	; 100
+ 7fe:	30 e0       	ldi	r19, 0x00	; 0
+ 800:	40 e0       	ldi	r20, 0x00	; 0
+ 802:	50 e0       	ldi	r21, 0x00	; 0
+ 804:	0e 94 51 04 	call	0x8a2	; 0x8a2 <__udivmodsi4>
+ 808:	39 bd       	out	0x29, r19	; 41
+ 80a:	28 bd       	out	0x28, r18	; 40
+	}
+	
+	if (pwn_no & PWM3)
+ 80c:	c3 fd       	sbrc	r28, 3
+ 80e:	08 c0       	rjmp	.+16     	; 0x820 <pwm_setDuty+0xf4>
+ 810:	1d c0       	rjmp	.+58     	; 0x84c <pwm_setDuty+0x120>
+ 812:	c3 ff       	sbrs	r28, 3
+ 814:	1b c0       	rjmp	.+54     	; 0x84c <pwm_setDuty+0x120>
+	{
+		if (duty_percent == 100) // if the duty cycle is 100% putting OCR1A the same number as as top value will cause A compare and overflow at the same time which only one of the is going to be activated so we put it equal TOP value( which held in ICR1)-1
+ 816:	d4 36       	cpi	r29, 0x64	; 100
+ 818:	19 f4       	brne	.+6      	; 0x820 <pwm_setDuty+0xf4>
+			OCR2 = 255;
+ 81a:	8f ef       	ldi	r24, 0xFF	; 255
+ 81c:	83 bd       	out	0x23, r24	; 35
+ 81e:	16 c0       	rjmp	.+44     	; 0x84c <pwm_setDuty+0x120>
+		else
+			OCR2 = (255 * (uint16_t)duty_percent) / 100;
+ 820:	8f ef       	ldi	r24, 0xFF	; 255
+ 822:	d8 9f       	mul	r29, r24
+ 824:	90 01       	movw	r18, r0
+ 826:	11 24       	eor	r1, r1
+ 828:	36 95       	lsr	r19
+ 82a:	27 95       	ror	r18
+ 82c:	36 95       	lsr	r19
+ 82e:	27 95       	ror	r18
+ 830:	ab e7       	ldi	r26, 0x7B	; 123
+ 832:	b4 e1       	ldi	r27, 0x14	; 20
+ 834:	0e 94 73 04 	call	0x8e6	; 0x8e6 <__umulhisi3>
+ 838:	96 95       	lsr	r25
+ 83a:	87 95       	ror	r24
+ 83c:	83 bd       	out	0x23, r24	; 35
+ 83e:	06 c0       	rjmp	.+12     	; 0x84c <pwm_setDuty+0x120>
+			OCR1A = ((ICR1L) + ((uint16_t)ICR1H << 8)) - 1;
+		else
+			OCR1A = ((uint32_t)((ICR1L) + ((uint16_t)ICR1H << 8)) * duty_percent) / 100;
+	}
+	
+	if (pwn_no & PWM2)    
+ 840:	c2 fd       	sbrc	r28, 2
+ 842:	c1 cf       	rjmp	.-126    	; 0x7c6 <pwm_setDuty+0x9a>
+ 844:	e6 cf       	rjmp	.-52     	; 0x812 <pwm_setDuty+0xe6>
+ 846:	c2 fd       	sbrc	r28, 2
+ 848:	ce cf       	rjmp	.-100    	; 0x7e6 <pwm_setDuty+0xba>
+ 84a:	e3 cf       	rjmp	.-58     	; 0x812 <pwm_setDuty+0xe6>
+			OCR2 = 255;
+		else
+			OCR2 = (255 * (uint16_t)duty_percent) / 100;
+	}
+
+}
+ 84c:	df 91       	pop	r29
+ 84e:	cf 91       	pop	r28
+ 850:	08 95       	ret
+
+00000852 <pwm_stop>:
+
+
+void pwm_stop(uint8_t pwm_no)
+{
+ 852:	cf 93       	push	r28
+ 854:	c8 2f       	mov	r28, r24
+	if (pwm_no & PWM0)
+ 856:	80 ff       	sbrs	r24, 0
+ 858:	07 c0       	rjmp	.+14     	; 0x868 <__stack+0x9>
+	{
+		TCCR0 &= ~((1 << COM00) | (1 << COM01)); 
+ 85a:	83 b7       	in	r24, 0x33	; 51
+ 85c:	8f 7c       	andi	r24, 0xCF	; 207
+ 85e:	83 bf       	out	0x33, r24	; 51
+		DIO_SET_VAL(DIO_OC1A, DIO_LOW); 
+ 860:	60 e0       	ldi	r22, 0x00	; 0
+ 862:	8d e1       	ldi	r24, 0x1D	; 29
+ 864:	0e 94 76 00 	call	0xec	; 0xec <DIO_SetPinVal>
+	}
+	
+	if (pwm_no & PWM1)
+ 868:	c1 ff       	sbrs	r28, 1
+ 86a:	07 c0       	rjmp	.+14     	; 0x87a <__stack+0x1b>
+	{
+		TCCR1A &= ~((1 << COM1A0) | (1 << COM1A1));
+ 86c:	8f b5       	in	r24, 0x2f	; 47
+ 86e:	8f 73       	andi	r24, 0x3F	; 63
+ 870:	8f bd       	out	0x2f, r24	; 47
+		DIO_SET_VAL(DIO_OC1A, DIO_LOW);
+ 872:	60 e0       	ldi	r22, 0x00	; 0
+ 874:	8d e1       	ldi	r24, 0x1D	; 29
+ 876:	0e 94 76 00 	call	0xec	; 0xec <DIO_SetPinVal>
+	}
+	
+	if (pwm_no & PWM2)
+ 87a:	c2 ff       	sbrs	r28, 2
+ 87c:	07 c0       	rjmp	.+14     	; 0x88c <__stack+0x2d>
+	{
+		TCCR1A &= ~((1 << COM1B0) | (1 << COM1B1));
+ 87e:	8f b5       	in	r24, 0x2f	; 47
+ 880:	8f 7c       	andi	r24, 0xCF	; 207
+ 882:	8f bd       	out	0x2f, r24	; 47
+		DIO_SET_VAL(DIO_OC1B, DIO_LOW);
+ 884:	60 e0       	ldi	r22, 0x00	; 0
+ 886:	8c e1       	ldi	r24, 0x1C	; 28
+ 888:	0e 94 76 00 	call	0xec	; 0xec <DIO_SetPinVal>
+	}
+	
+	if (pwm_no & PWM3)
+ 88c:	c3 ff       	sbrs	r28, 3
+ 88e:	07 c0       	rjmp	.+14     	; 0x89e <__stack+0x3f>
+	{
+		TCCR2 &= ~((1 << COM20) | (1 << COM21));
+ 890:	85 b5       	in	r24, 0x25	; 37
+ 892:	8f 7c       	andi	r24, 0xCF	; 207
+ 894:	85 bd       	out	0x25, r24	; 37
+		DIO_SET_VAL(DIO_OC2, DIO_LOW);
+ 896:	60 e0       	ldi	r22, 0x00	; 0
+ 898:	8f e1       	ldi	r24, 0x1F	; 31
+ 89a:	0e 94 76 00 	call	0xec	; 0xec <DIO_SetPinVal>
+	else
+	{
+		
+	}
+	
+}
+ 89e:	cf 91       	pop	r28
+ 8a0:	08 95       	ret
+
+000008a2 <__udivmodsi4>:
+ 8a2:	a1 e2       	ldi	r26, 0x21	; 33
+ 8a4:	1a 2e       	mov	r1, r26
+ 8a6:	aa 1b       	sub	r26, r26
+ 8a8:	bb 1b       	sub	r27, r27
+ 8aa:	fd 01       	movw	r30, r26
+ 8ac:	0d c0       	rjmp	.+26     	; 0x8c8 <__udivmodsi4_ep>
+
+000008ae <__udivmodsi4_loop>:
+ 8ae:	aa 1f       	adc	r26, r26
+ 8b0:	bb 1f       	adc	r27, r27
+ 8b2:	ee 1f       	adc	r30, r30
+ 8b4:	ff 1f       	adc	r31, r31
+ 8b6:	a2 17       	cp	r26, r18
+ 8b8:	b3 07       	cpc	r27, r19
+ 8ba:	e4 07       	cpc	r30, r20
+ 8bc:	f5 07       	cpc	r31, r21
+ 8be:	20 f0       	brcs	.+8      	; 0x8c8 <__udivmodsi4_ep>
+ 8c0:	a2 1b       	sub	r26, r18
+ 8c2:	b3 0b       	sbc	r27, r19
+ 8c4:	e4 0b       	sbc	r30, r20
+ 8c6:	f5 0b       	sbc	r31, r21
+
+000008c8 <__udivmodsi4_ep>:
+ 8c8:	66 1f       	adc	r22, r22
+ 8ca:	77 1f       	adc	r23, r23
+ 8cc:	88 1f       	adc	r24, r24
+ 8ce:	99 1f       	adc	r25, r25
+ 8d0:	1a 94       	dec	r1
+ 8d2:	69 f7       	brne	.-38     	; 0x8ae <__udivmodsi4_loop>
+ 8d4:	60 95       	com	r22
+ 8d6:	70 95       	com	r23
+ 8d8:	80 95       	com	r24
+ 8da:	90 95       	com	r25
+ 8dc:	9b 01       	movw	r18, r22
+ 8de:	ac 01       	movw	r20, r24
+ 8e0:	bd 01       	movw	r22, r26
+ 8e2:	cf 01       	movw	r24, r30
+ 8e4:	08 95       	ret
+
+000008e6 <__umulhisi3>:
+ 8e6:	a2 9f       	mul	r26, r18
+ 8e8:	b0 01       	movw	r22, r0
+ 8ea:	b3 9f       	mul	r27, r19
+ 8ec:	c0 01       	movw	r24, r0
+ 8ee:	a3 9f       	mul	r26, r19
+ 8f0:	70 0d       	add	r23, r0
+ 8f2:	81 1d       	adc	r24, r1
+ 8f4:	11 24       	eor	r1, r1
+ 8f6:	91 1d       	adc	r25, r1
+ 8f8:	b2 9f       	mul	r27, r18
+ 8fa:	70 0d       	add	r23, r0
+ 8fc:	81 1d       	adc	r24, r1
+ 8fe:	11 24       	eor	r1, r1
+ 900:	91 1d       	adc	r25, r1
+ 902:	08 95       	ret
+
+00000904 <_exit>:
+ 904:	f8 94       	cli
+
+00000906 <__stop_program>:
+ 906:	ff cf       	rjmp	.-2      	; 0x906 <__stop_program>

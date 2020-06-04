@@ -1,0 +1,11 @@
+áæ ÓãÍÊæ ÇäÇ ßäÊ ÈÍÇæá ÇÚãá ãßÊÈÉ Êßæä generic ÈÍíË Çáapplication layer ãÊÊÛíÑÔ áæ ÛíÑÊ Çámcu Çááí ÔÛÇá Úáíå
+İÇáØÑíŞÉ Çááí ÚÑİÊåÇ Çä ãËáÇ áæ ÚäÏí uart åíÈŞì ÚäÏí 4 İÇíáÇÊ:
+-uart_api.c : contains the generic uart functions
+-uart_api.h: contains general(common) uart configuations(eg. baud rate ... etc)
+
+-uart_config.h: contains the uart configurations for each specific mcu hardware (eg uart_pins)
+ uart_config.c: contains the functions that deals with the uart peripheral hardware
+
+Çáuser ÈíÊÚÇãá ãÚ ãáİÇÊ Çáapi ÈÓ ãÈíÊÚÇãáÔ ãÚ ÇáãáİÇÊ Çáconfig
+ÇáÓæÇá åäÇ åá åíÇ Ïí ÇáØÑíŞÉ ÇáÇÕÍ  ÚáÔÇä ÇÚãá ãæÖæÚ Çágeneric library  Ïí æ áÇ İí ØÑíŞÉ ÊÇäíÉ 
+ æ áæ ÇáØÑíŞÉ Ïí ÕÍ  ÓæÇá ÊÇäí ÇäÇ ÈáÇŞí functions Òí Çáuart_write ÈÊÈŞì ãÊÚÑİÉ İí Çáuart_config.c ÈÓ Çáuser ãÈíÊÚÇãáÔ ãÈÇÔÑÉ ãÚ Çáuart_config.c İåá İí Çáuart_api.c ÇÚãá function ÊÇäíÉ ÈÇÓã ãËáÇ uart_send æ ÇÎáí İí Çábody ÈÊÇÚåÇ ßá Çááí ÈÊÚãáå ÈÊäÏå Úáì uart_write Çááí ãæÌæÏ İí Çáuart_config ( ÈÓ Ïå ãÔ ßæíÓ ß overhead æ ßmemery   áÇäí ÈÈŞì ÈäÏå Úáì 2 functions æÑÇ ÈÚÖ )æ áÇ ÇÎáí Çá uart_write äİÓåÇ ãæÌæÏÉ ßprototype İí Çá uart_api.h  .. æ ÊÚÑİíåÇ ãæÌæÏ İí Çáuart_config.c ÈÎíË Çáuser íäÏå ÚáíåÇ ÚáØæá ÈÏá ãÇ íäÏå Úáì function ÊäÏå ÚáíåÇ(ÈÓ ßÏå Çáuart_api.c åíÈŞì İÇÖí ÊŞÑíÈÇ áÇä ãÚÙã Çáfunctions Çááí Çáuser ÚÇíÒåÇ ÈÊÈŞì ãæÌæÏÉ İí Çáconfig.c ).. İÇíå ÇáØÑíŞÉ ÇáÇÍÓä ¿

@@ -1,0 +1,6 @@
+when derefencing new pointer like an array 
+this way is causes an error:
+(uint8_t *)ap_str[count]
+so I used this mehtod:
+*((uint8_t *)ap_str + count) .. which works fine
+===============================================
