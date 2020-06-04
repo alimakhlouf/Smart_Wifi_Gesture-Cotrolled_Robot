@@ -38,22 +38,22 @@ typedef struct element{
 volatile start_t * list;
 element_t e;
 element_t * e_ptr = &e;
-char esp_buff[9] = "{        ";
+char esp_buff[10] = "{        ";
 
 
-void esp_init();
-void esp_send_temp(unint8_t ch_num);
-void esp_send_smoke(unint8_t ch_num);
-void esp_send_H2O(unint8_t ch_num);
-void alarm();
-void esp_send(const char * str, unint8_t ch_num);
+void esp_init ();
+uint8_t esp_send_temp (unint8_t ch_num);
+uint8_t esp_send_smoke (unint8_t ch_num);
+uint8_t esp_send_H2O (unint8_t ch_num);
+void alarm ();
+void esp_send (const char * str, unint8_t ch_num);
 void esp_send_alert (char * alert, uint8_t ch_num);
-void sensor_to_esp_buff(char * sensor_str, uint8_t info_type);
-void store_data();
+void sensor_to_esp_buff (char * sensor_str, uint8_t info_type);
+void store_data ();
 void no_data_alarm ();
 void error_alarm ();
 
-void turn_right()
+void turn_right ()
 {
 	//PORTB = 0b00000110; // the first two bits for the right motor .. the second two bits for the left motor
 	DIO_SET_VAL(L_FORWARD, DIO_HIGH);
@@ -225,7 +225,7 @@ void timer0_ovf_handler()
 		if (rx_end_flag == 1)             
 		{
 			rx_end_flag = 0; // clear it and wait for the uart rx interrupt to set it if a byte was received
-			//by uart              
+			                 //by uart              
 			millis_reset_tmr(3);          
 			counter++ ;                   
 		}
@@ -265,15 +265,13 @@ void timer0_ovf_handler()
 
 //********************************************************************************************************
 //********************************************************************************************************
-
 //********************************************************************************************************
-
 //********************************************************************************************************
-
 //********************************************************************************************************
 
 int main(void)
 {
+	uint8_t f_st = SUCCESS;
 	uint8_t receive_buff[9];
 	uint8_t i = 0;
 	uint8_t h2o[3] = {0};
@@ -289,9 +287,7 @@ int main(void)
 	DIO_SET_DIR(29, DIO_OUTPUT);
 	DIO_SET_DIR(0, DIO_OUTPUT);
 	DIO_SET_DIR(15, DIO_OUTPUT);	
-	DIO_SET_DIR(30, DIO_OUTPUT);
-	
-	
+	DIO_SET_DIR(30, DIO_OUTPUT);	
 
 	list = create_list(); // create the queue that is going to hold the esp requests
 	
@@ -299,12 +295,11 @@ int main(void)
 	
 	//move_forward();
 	
-	usart_init(USART0, 9600, DATA_SIZE_8, TX_RX, NO_PARITY, ONE_STOP_BIT, TX_RISE);
+	uart_init(UART0, 9600, DATA_BITS_8, TX_RX, PARITY_NO, STOP_BITS_1, TX_R_RX_F);
 	
-	
-	usart_set_rx_int(USART0, true);
-	usart_set_rx_isr(USART0, uart_rx_handler);
-	usart_write_str_mark(USART0, "hello\r\n", 0);
+	uart_set_rx_int(UART0, true);
+	uart_set_rx_isr(UART0, uart_rx_handler);
+	uart_send_until(UART0, "hello\r\n", 0);
 	
 	millis_add_ovf_isr(timer0_ovf_handler);
 	
@@ -312,19 +307,19 @@ int main(void)
 
 	
 #if MCP == 1
-	mcp_init();
-
-	mcp_tx_id(MCP_TX(0), 0, 0x058f);//000 1111 0111 001 10 00110101 10001111
-	mcp_tx_id(MCP_TX(1), 0, 0x057f);//000 1111 0111 001 10 00110101 10001111
-	mcp_tx_id(MCP_TX(2), 0, 0x056f);//000 1111 0111 001 10 00110101 10001111
+	if (mcp_init() == ERROR)
+	{
+		uart_send_str(UART0, "SPI ERROR");	
+		while (1);
+	}
+	
+	mcp_set_tx_id(MCP_TX(0), 0, 0x058f);//000 1111 0111 001 10 00110101 10001111
+	mcp_set_tx_id(MCP_TX(1), 0, 0x057f);//000 1111 0111 001 10 00110101 10001111
+	mcp_set_tx_id(MCP_TX(2), 0, 0x056f);//000 1111 0111 001 10 00110101 10001111
 #endif
 
-
-
-	 usart_write_str_mark(USART0, "READY", 0);
-	
-	
-	
+	 uart_send_until(UART0, "READY", 0);
+		
 		/* Replace with your application code */
 		while (1)
 		{
@@ -345,10 +340,10 @@ int main(void)
 			if (mcp_check_flag(RX1IF_BIT))
 			{
 				
-				DIO_TOGGLE(29);
+				DIO_TOGGLE(31);
 				//PORTA ^= (1 << 2);
 				mcp_clear_flag(RX1IF_BIT);
-				mcp_rx_data(MCP_RX(1), break_f);
+				mcp_get_rx_data(MCP_RX(1), break_f);
 				
 				if (break_f[0] == 'B')
 				{
@@ -374,22 +369,49 @@ int main(void)
 			{
 				
 				pop(list, e_ptr, sizeof(element_t));
-				usart_write_str_mark(USART0, "size bigger than 1 \r\n", 0);
+				uart_send_until(UART0, "\r\nsize > 1 \r\n", 0);
 /*				DIO_TOGGLE(0);*/
 				
 				//then it's an esp request
 				if (e_ptr->request_type == 'S')
 				{
-					esp_send_smoke(ch_num[0]);
+					f_st = esp_send_smoke(ch_num[0]);
+					
+					if (f_st == TX1_FAIL)
+					{
+						uart_send_str(UART0, "\r\nSMOKE CAN TX ERROR\r\n");
+					}
+					else if (f_st == RX1_FAIL)
+					{
+						uart_send_str(UART0, "\r\nSMOKE CAN RX ERROR\r\n");
+					}
+					
 				}
 				else if (e_ptr->request_type == 'T')
 				{
+					f_st = esp_send_temp(ch_num[0]);
 					
-					esp_send_temp(ch_num[0]);
+					if (f_st == TX0_FAIL)
+					{
+						uart_send_str(UART0, "\r\nTEMP CAN TX ERROR\r\n");
+					}
+					else if (f_st == RX0_FAIL)
+					{
+						uart_send_str(UART0, "\r\nTEMP CAN RX ERROR\r\n");
+					}
 				}
 				else if (e_ptr->request_type == 'H')
 				{
 					esp_send_H2O(ch_num[0]);
+					
+					if (f_st == TX0_FAIL)
+					{
+						uart_send_str(UART0, "\r\nhumidity CAN TX ERROR\r\n");
+					}
+					else if (f_st == RX0_FAIL)
+					{
+						uart_send_str(UART0, "\r\nhumidity CAN RX ERROR\r\n");
+					}
 				}
 				else if (e_ptr->request_type == 'D')
 				{
@@ -403,6 +425,7 @@ int main(void)
 					}
 					else if ( e_ptr->str[0] == 'F')
 					{
+						
 						if (!barrier_flag)
 						{
 							move_forward();
@@ -456,9 +479,9 @@ void store_data()
 		e_ptr->request_type = req_type;
 		push(list, e_ptr, sizeof(element_t));// push the request in the Queue
 		#if 0
-		UART_sendStrByMark("\r\n size = ", 0);
-		UART_sendChr(list->size + 48);
-		UART_sendStrByMark("\r\n", 0);
+		uart_send_until(UART0, "\r\n size = ", 0);
+		UART_send(list->size + 48);
+		uart_send_until(UART0, "\r\n", 0);
 		#endif
 	}
 
@@ -469,10 +492,11 @@ void store_data()
 //this string into esp_buff to be sent 
 void sensor_to_esp_buff(char * sensor_str, uint8_t info_type)
 {
-	uint8_t i = 0;
+	
 	esp_buff[0] = '{'; //can be moved to a a place where it's executed only once instead of getting executed every time 
 	esp_buff[1] = info_type;
-	 
+	
+	uint8_t i = 0;
 	while (sensor_str[i] != 0)
 	{
 		esp_buff[i + 2] = sensor_str[i]; // i + 1 because the first element cantains a bracket({)
@@ -484,69 +508,87 @@ void sensor_to_esp_buff(char * sensor_str, uint8_t info_type)
 	esp_buff[i + 2] = 0;
 }
 
-void esp_send_smoke(unint8_t ch_num)
+uint8_t esp_send_smoke(unint8_t ch_num)
 {
 	char smoke[7] = "1234";
 	
 #if MCP == 1
 	mcp_send_remoteframe(MCP_TX(1), 8);
-	
-	while (mcp_check_flag(TX1IF_BIT) == 0)
+	volatile int16_t sw_timer = 1500;
+	//wait for the flag for approximately 2 sec
+	while ((mcp_check_flag(TX1IF_BIT) == 0) && (--sw_timer))
 	{
-		delay_msec(100);
-		DIO_TOGGLE(31);
-		//PORTA ^= 1;
+		delay_msec(1);
+	}
+	
+	if (!sw_timer)
+	{
+		return TX1_FAIL;
 	}
 	
 	mcp_clear_flag(TX1IF_BIT);
 	
-	while(mcp_check_flag(RX1IF_BIT) == 0)
+	//wait for 5 seconds for response
+	sw_timer = 2500;
+	
+	while ((mcp_check_flag(RX1IF_BIT) == 0) && (--sw_timer))
 	{
-		delay_msec(100);
-		DIO_TOGGLE(31);
-		//PORTA ^= 1;
+		delay_msec(2);
+	}
+	
+	if (!sw_timer)
+	{
+		return RX1_FAIL;
 	}
 	
 	mcp_clear_flag(RX1IF_BIT);
 	
-	mcp_rx_data(MCP_RX(1), smoke);
+	mcp_get_rx_data(MCP_RX(1), smoke);
 #endif
 	sensor_to_esp_buff(smoke, 'S');
 	esp_send(esp_buff, ch_num);
+	
+	return SUCCESS;
 }
 
 
 
-void esp_send_temp(unint8_t ch_num)
+uint8_t esp_send_temp(unint8_t ch_num)
 {
 	char temp[4] = "12";
 	char receive_buff[9];
 	
 #if MCP == 1
 	mcp_send_remoteframe(MCP_TX(0), 5);
+	volatile int16_t sw_timer = 1500;
 	
-	while (mcp_check_flag(TX0IF_BIT) == 0);
-#if 0
+	while ((mcp_check_flag(TX0IF_BIT) == 0) && (--sw_timer))
 	{
-		delay_msec(100);
-		DIO_TOGGLE(31);
-		//PORTA ^= 1;
+		_delay_ms(1);
 	}
-#endif
 	
-	 
-	mcp_clear_flag(TX0IF_BIT); 
-	
-	while(mcp_check_flag(RX0IF_BIT) == 0)
+	if (!sw_timer)
 	{
-		delay_msec(100);
-		DIO_TOGGLE(31);
-		//PORTA ^= 1;
+		return TX0_FAIL;
+	}
+	 
+	mcp_clear_flag(TX0IF_BIT);
+
+	sw_timer = 1500;
+	
+	while((mcp_check_flag(RX0IF_BIT) == 0) && (--sw_timer))
+	{
+		delay_msec(1);
+	}
+	
+	if (!sw_timer)
+	{
+		return RX0_FAIL;
 	}
 	
 	mcp_clear_flag(RX0IF_BIT);
 	
-	mcp_rx_data(MCP_RX(0), receive_buff);
+	mcp_get_rx_data(MCP_RX(0), receive_buff);
 	
 	
 	temp[0] = receive_buff[2];
@@ -559,34 +601,46 @@ void esp_send_temp(unint8_t ch_num)
 	sensor_to_esp_buff(temp, 'T');
 	esp_send(esp_buff, ch_num);
 	
+	return SUCCESS;
 }
 
-void esp_send_H2O(unint8_t ch_num)
+uint8_t esp_send_H2O(unint8_t ch_num)
 {
 	char h2o[3] = "89";
 	char receive_buff[9];
 	
 #if MCP == 1
-	mcp_send_remoteframe(MCP_TX(0), 5);
+	mcp_send_remoteframe(MCP_TX(0), 8);
 	
-	while (mcp_check_flag(TX0IF_BIT) == 0)
+	volatile int16_t sw_timer = 1500;
+	
+	while ((mcp_check_flag(TX0IF_BIT) == 0) && (--sw_timer))
 	{
-		delay_msec(100);
-		DIO_TOGGLE(31);
-		//PORTA ^= 1;
+		delay_msec(1);
+	}
+	
+	if (!sw_timer)
+	{
+		return TX0_FAIL;
 	}
 	
 	mcp_clear_flag(TX0IF_BIT);
 	
-	while(mcp_check_flag(RX0IF_BIT) == 0)
+	sw_timer = 1500;
+	
+	while((mcp_check_flag(RX0IF_BIT) == 0) && (--sw_timer))
 	{
-		delay_msec(100);
-		DIO_TOGGLE(31);
+		delay_msec(1);
+	}
+	
+	if (!sw_timer)
+	{
+		return RX0_FAIL;
 	}
 	
 	mcp_clear_flag(RX0IF_BIT);
 	
-	mcp_rx_data(MCP_RX(0), receive_buff);
+	mcp_get_rx_data(MCP_RX(0), receive_buff);
 	
 	h2o[0] = receive_buff[0];
 	h2o[1] = receive_buff[1];
@@ -597,6 +651,7 @@ void esp_send_H2O(unint8_t ch_num)
 	sensor_to_esp_buff(h2o, 'H');
 	esp_send(esp_buff, ch_num);
 	
+	return SUCCESS;
 }
 
 
@@ -607,17 +662,17 @@ void esp_send(const char * str, unint8_t ch_num)
 	char data_size_str[4] = {0};
 		
 	itoa(strlen(str), data_size_str, 10);
-	
-	usart_write_str_mark(USART0, "AT+CIPSEND=", 0);
-	usart_write(USART0, ch_num + 48); 
-	usart_write(USART0, ',');
-	usart_write_str_mark(USART0, data_size_str, 0);
+	 ch_num += 48;
+	uart_send_until(UART0, "AT+CIPSEND=", 0);
+	uart_send(UART0, &ch_num, 1); 
+	uart_send(UART0, ",", 1);
+	uart_send_until(UART0, data_size_str, 0);
 	//wait while the esp is receiving some message and then send the \r\n order to make the esp listen to your response
 	while (receive_flag != -2);
 	//collision of data between the request and the response
-	usart_set_rx_int(USART0, false); // disable the interrupt .. to do not listen for any request and listen only
+	uart_set_rx_int(UART0, false); // disable the interrupt .. to do not listen for any request and listen only
 	//for the response of command
-	usart_write_str_mark(USART0, "\r\n", 0);
+	uart_send_until(UART0, "\r\n", 0);
 	at_flag = check_strings(500, 2, "OK\r\n", "ERROR\r\n");
 	if (!at_flag)
 	{
@@ -628,16 +683,16 @@ void esp_send(const char * str, unint8_t ch_num)
 		error_alarm();
 	}
 
-	usart_set_rx_int(USART0, true); //after getting the response activate the interrupt again to listen for any coming requests
+	uart_set_rx_int(UART0, true); //after getting the response activate the interrupt again to listen for any coming requests
 	
-	usart_write_str_mark(USART0, str, 0);
-	usart_write_str_mark(USART0, "\r\n", 0);
+	uart_send_until(UART0, str, 0);
+	uart_send_until(UART0, "\r\n", 0);
 }
 
 void no_data_alarm()
 {
 	
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		//PORTC ^= 1 << 5;
 		DIO_TOGGLE(31);
@@ -690,93 +745,13 @@ void alarm()
 	
 }
 
-void esp_init()
-{
-	uint8_t at_flag;
-	
-	usart_set_rx_int(USART0, false);
-	usart_write_str_mark(USART0, "AT\r\n", 0);
-	at_flag = check_strings(1000, 2, "OK\r\n", "ERROR\r\n");
-	if (!at_flag)
-	{
-		no_data_alarm();
-	}
-	else if (at_flag == AT_ERROR)
-	{
-		error_alarm();
-	}
-	else
-	{
-		alarm();
-	}
-	
-	
-	usart_write_str_mark(USART0, "AT+CWMODE=1\r\n", 0);
-	
-	at_flag = check_strings(500, 2, "OK\r\n", "ERROR\r\n");
-	if (!at_flag)
-	{
-		no_data_alarm();
-	}
-	else if (at_flag == AT_ERROR)
-	{
-		error_alarm();
-	}
-	
-	
-	usart_write_str_mark(USART0, "AT+CIPMUX=1\r\n", 0);
-	at_flag = check_strings(500, 2, "OK\r\n", "ERROR\r\n");
-	if (!at_flag)
-	{
-		no_data_alarm();
-	}
-	else if (at_flag == AT_ERROR)
-	{
-		error_alarm();
-	}
-	
-	
-	usart_write_str_mark(USART0, "AT+CIFSR\r\n", 0);
-	at_flag = check_strings(500, 2, "OK\r\n", "ERROR\r\n");
-	if (!at_flag)
-	{
-		no_data_alarm();
-	}
-	else if (at_flag == AT_ERROR)
-	{
-		error_alarm();
-	}
-	
-	usart_write_str_mark(USART0, "AT+CIPSERVER=1,80\r\n", 0);
-	at_flag = check_strings(500, 2, "OK\r\n", "ERROR\r\n");
-	if (!at_flag)
-	{
-		no_data_alarm();
-	}
-	else if (at_flag == AT_ERROR)
-	{
-		error_alarm();
-	}
-	
-	usart_write_str_mark(USART0, "AT+CIPSTO=1000\r\n", 0);
-	at_flag = check_strings(500, 2, "OK\r\n", "ERROR\r\n");
-	if (!at_flag)
-	{
-		no_data_alarm();
-	}
-	else if (at_flag == AT_ERROR)
-	{
-		error_alarm();
-	}
-	
-	usart_set_rx_int(USART0, true);
-}
+
 
 
 void error_alarm()
 {
 	
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		DIO_TOGGLE(31);
 		delay_msec(100);
@@ -845,5 +820,6 @@ void get_req()
 			}
 						
 		}
+		
 }
 #endif

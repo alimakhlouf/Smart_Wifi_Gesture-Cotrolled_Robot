@@ -18,24 +18,21 @@
 #include "dio_api.h"
 #include <stdbool.h>
 
-// the following version of configurations for ATMEGA32-16-8
-#if defined(ATMEGA8) || defined(ATMEGA32) || defined(ATMEGA16)
 
-
-#ifdef ATMEGA8
+#if defined(ATMEGA8)
 //no of io ports in atmega 8
 #define NO_PORTS 3
 
 // the base address of the PIN registers (which is PINB)
-#define PIN_REG_BASE (volatile uint8_t *)(0x39)
+#define PIN_REG_BASE (volatile uint8_t *)(0x36)
 // the base address of the DDR registers (which is DDRB)
-#define DDR_REG_BASE (volatile uint8_t *)(0x38)
+#define DDR_REG_BASE (volatile uint8_t *)(0x37)
 // the base address of the PORT registers (which is PORTB)
-#define PORT_REG_BASE (volatile uint8_t *)(0x37)
+#define PORT_REG_BASE (volatile uint8_t *)(0x38)
 
 //mapping dio pins to their corresponding order in ATMEGA8 pins
 #define MCU_PIN0  14 //C6
-#define MCU_PIN1  16 //D0 
+#define MCU_PIN1  16 //D0
 #define MCU_PIN2  17 //D1
 #define MCU_PIN3  18 //D2
 #define MCU_PIN4  19 //D3
@@ -58,8 +55,35 @@
 #define MCU_PIN21 12 //C4
 #define MCU_PIN22 13 //C5
 
+#if 0
+//=======================================================
+#define PORTB *((volatile uint8_t *)(0x38))
+#define DDRB  *((volatile uint8_t *)(0x37))
+#define PINB  *((volatile uint8_t *)(0x36))
+//=======================================================
+#define PORTC *((volatile uint8_t *)(0x35))
+#define DDRC  *((volatile uint8_t *)(0x34))
+#define PINC  *((volatile uint8_t *)(0x33))
+//=======================================================
+#define PORTD *((volatile uint8 *)(0x32))
+#define DDRD  *((volatile uint8 *)(0x31))
+#define PIND  *((volatile uint8 *)(0x30))
+//=======================================================
+#endif
 
+#define NUM_PIN_PER_PORT 8
+
+//it chooses the port number whether A-B-C-D
+#define PORT_OFFSET(n) (((n) * -3))
+
+
+
+
+
+
+// the following version of configurations for ATMEGA32-16
 #elif defined(ATMEGA32) || defined(ATMEGA16)
+
 //no of io ports in atmega32-16
 #define NO_PORTS 4
 
@@ -103,7 +127,6 @@
 #define MCU_PIN29 2  //A2
 #define MCU_PIN30 1  //A1
 #define MCU_PIN31 0  //A0
-#endif
 
 
 #define NUM_PIN_PER_PORT 8
@@ -112,14 +135,10 @@
 #define PORT_OFFSET(n) (((n) * -3))
 
 #if 0
-
-#if defined(ATMEGA32) || defined(ATMEGA16)
-//=======================================================
-#define PORTA *((volatile uint8_t *)(0x3B))
-#define DDRA  *((volatile uint8_t *)(0x3A))
 #define PINA  *((volatile uint8_t *)(0x39))
-//=======================================================
-#endif
+#define DDRA  *((volatile uint8_t *)(0x3A))
+#define PORTA *((volatile uint8_t *)(0x3B))
+
 
 //=======================================================
 #define PORTB *((volatile uint8_t *)(0x38))
@@ -138,6 +157,9 @@
 
 
 #endif //ATMEGA32 ATMEGA8 ATMEGA16 
+
+
+
 /* ----------------------------------------------------------------------------
 [Macro Name] : dio_set_pin_dir
 [Description] : -This function is responsible for configuring the direction of

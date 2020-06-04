@@ -22,40 +22,52 @@
 
 #define MCP_ACTIVATED 1
 
+/*************error codes***************/
+#define SENSOR_ERROR 255
+
 void alarm();
-void store_dht ();
+uint8_t store_dht ();
 
 void store_mq2 ();
+void send_all_readings();
 
 int main(void)
 {
 	DIO_SET_DIR(1, DIO_OUTPUT);
 	DIO_SET_DIR(2, DIO_OUTPUT);
 	DIO_SET_DIR(13, DIO_PULLUP);
+	DIO_SET_DIR(30, DIO_OUTPUT);
 	
-	uint16_t hcs_cm = 0;
+	volatile uint16_t mq2_result = 0;
+	volatile uint16_t hcs_cm = 0;
 	uint8_t buff[5];
-	char DHT11_data[5] = {0};
-	char smoke[10]  = {0};
-	char t_h[5]  = {0};
-	uint16_t mq2_result = 0;
-	uint8_t state = 0;
-	uint8_t break_flag = 0;
+
 	
-	usart_init(USART0, 9600, DATA_SIZE_8, TX_RX, NO_PARITY, ONE_STOP_BIT, TX_RISE);
+	volatile uint8_t state = 0;
+	volatile uint8_t break_flag = 0;
+	
+	uart_init(UART0, 9600, DATA_BITS_8, TX_RX, PARITY_NO, STOP_BITS_1, TX_R_RX_F);
 	
 	DHT_init();
 	
 	MQ2_init();
 #if  MCP_ACTIVATED == 1
-	mcp_init();
-	mcp_tx_id(MCP_TX(0), 0, 0x058f); //000 1111 0111 001 10 00110101 10001111
+	if (!mcp_init())
+	{
+		for (int j = 0; j < 20; j++)
+		{
+			DIO_TOGGLE(1);
+			delay_msec(100);
+			
+		}
+	}
+	mcp_set_tx_id(MCP_TX(0), 0, 0x058f); //000 1111 0111 001 10 00110101 10001111
 	//mcp_tx_data(MCP_TX(0), DATA_FRAME, "ALIBE", 5);
 	
-	mcp_tx_id(MCP_TX(1), 0, 0x057f); //000 1111 0111 001 10 00110101 10001111
+	mcp_set_tx_id(MCP_TX(1), 0, 0x057f); //000 1111 0111 001 10 00110101 10001111
 	//mcp_tx_data(MCP_TX(1), DATA_FRAME, "ALIST", 5);
 	
-	mcp_tx_id(MCP_TX(2), 0, 0x056f); //000 1111 0111 001 10 00110101 10001111
+	mcp_set_tx_id(MCP_TX(2), 0, 0x056f); //000 1111 0111 001 10 00110101 10001111
 	//mcp_tx_data(MCP_TX(2), DATA_FRAME, "ALI MAKH", 8);
 #endif
 	
@@ -65,10 +77,12 @@ int main(void)
 	
 	sei();
 
-	usart_write_str_mark(USART0, "Triggering", 0);
+	//uart_send_until(UART0, "Triggering", 0);
 	hcsr04_trigger();
     /* Replace with your application code */
 	
+	
+	//just testing the dio library 
 #if 0
 	while(1)
 	{
@@ -78,10 +92,11 @@ int main(void)
 			DIO_SET_VAL(2, DIO_HIGH);
 			_delay_ms(500);
 		}
-		 if (!(DIO_READ(13)))
-		 {
-			 DIO_SET_VAL(2, DIO_LOW);
-		 }
+		
+		if (!(DIO_READ(13)))
+		{
+			DIO_SET_VAL(2, DIO_LOW);
+		}
 		 
 	}
 #endif
@@ -91,157 +106,196 @@ int main(void)
     while (1) 
     {
 #if MCP_ACTIVATED == 1
-
+		state = mcp_get_status();
 		
-		
-		state = mcp_status();
-		
-		if (mcp_status_rx(state, MCP_STAT_NO_RX) == 0)
+		//if it has received a frame
+		if (mcp_get_status_rx(state, MCP_STAT_NO_RX) == 0)
 		{
-			uint8_t rx_state = mcp_rx_status();
+// 			for (int j = 0; j < 20; j++)
+// 			{
+// 				DIO_TOGGLE(1);
+// 				delay_msec(100);
+// 				
+// 			}
+// 			
+			volatile uint8_t rx_state = mcp_get_rx_status();
 			
-			if (mcp_rx_status_frame(rx_state, RX_STATUS_SREMOTE))
+			//if the received frame is a remote frame
+			if (mcp_get_rx_status_frame(rx_state, RX_STATUS_SREMOTE))
 			{
 				
-				if (mcp_rx_status_filter(rx_state, RX_STATUS_RXF(0)))
+// 				for (int j = 0; j < 5; j++)
+// 				{
+// 					DIO_TOGGLE(1);
+// 					delay_msec(500);
+// 					
+// 				}
+				
+				//if it's the first filter in the RXB0
+				if (mcp_get_rx_status_filters(rx_state, RX_STATUS_RXF(0)))
 				{
-					store_dht();
-					mcp_tx_trigger(MCP_TX(0));
+// 					for (int j = 0; j < 10; j++)
+// 					{
+// 						DIO_TOGGLE(1);
+// 						delay_msec(100);
+// 						
+// 					}
 					
+					if (store_dht() == SENSOR_ERROR)
+					{
+						uart_send_str(UART0, "\r\nw DHT SENSOR error\r\n");
+						for (int i = 0; i < 20; i++)
+						{
+							DIO_TOGGLE(30);
+							delay_msec(100);
+						}
+						while(1) ;
+					}
+					
+// 					for (int j = 0; j < 9; j++)
+// 					{
+// 						DIO_TOGGLE(1);
+// 						delay_msec(300);
+// 					}
+					
+					mcp_tx_trigger(MCP_TX(0));
 					mcp_clear_flag(RX0IF_BIT);
 					
+// 					for (int j = 0; j < 4; j++)
+// 					{
+// 						DIO_TOGGLE(1);
+// 						delay_msec(500);
+// 					}
 				}
 				
-				if (mcp_rx_status_filter(rx_state, RX_STATUS_RXF(2)))
+				//if it's the first filter in RXB1
+				if (mcp_get_rx_status_filters(rx_state, RX_STATUS_RXF(2)))
 				{
 					store_mq2();
 					mcp_tx_trigger(MCP_TX(1));
-					
 					mcp_clear_flag(RX1IF_BIT);
-					
 				}
 				
 			}
 			
 		}
 		
-		if (mcp_status_tx(state, MCP_STAT_TX0))
+		if (mcp_get_status_tx(state, MCP_STAT_TX0))
 		{
 			mcp_clear_flag(TX0IF_BIT);
 		}
 		
-		if (mcp_status_tx(state, MCP_STAT_TX1))
+		if (mcp_get_status_tx(state, MCP_STAT_TX1))
 		{			
 			mcp_clear_flag(TX1IF_BIT);
 		}
 		
-		if (mcp_status_tx(state, MCP_STAT_TX2))
+		if (mcp_get_status_tx(state, MCP_STAT_TX2))
 		{
 			mcp_clear_flag(TX2IF_BIT);
 		}
 		
-		if ( hcsr04_data_ready())
-		{
-			usart_write_str_mark(USART0, "data_ready", 0);
-			hcs_cm = hcsr04_cm();
-
-
-			if ((hcs_cm < 5) && (break_flag == 0))
-			{
-				DIO_TOGGLE(1);
-				//DIO_TOGGLE(2);
-				mcp_send_dataframe(MCP_TX(2), "B1", 2);
-				break_flag = 1;
-			}
-			else if ((hcs_cm >= 5) && (break_flag == 1))
-			{
-				DIO_TOGGLE(1);
-				//DIO_TOGGLE(2);
-				mcp_send_dataframe(MCP_TX(2), "B0", 2);
-				break_flag = 0;
-			}
-			
-			
-			
-		}
+#endif
 		
 		if (millis(500) == 0)
 		{
+			
+			if ( hcsr04_data_ready())
+			{
+				//uart_write_str_mark(UART0, "data_ready", 0);
+				//DIO_TOGGLE(2);
+				hcs_cm = hcsr04_cm();
+// 				uart_write_str_mark(UART0, "cm: ", 0);
+// 				ltoa(hcs_cm , buff, 10);
+// 				uart_write_str_mark(UART0, buff, 0);
+// 				uart_write_str_mark(UART0, "\r\n", 0);
+
+
+				if ((hcs_cm < 5) && (break_flag == 0))
+				{
+					DIO_TOGGLE(1);
+					//DIO_TOGGLE(2);
+					
+					#if MCP_ACTIVATED == 1
+					mcp_send_dataframe(MCP_TX(2), "B1", 3);
+					#endif
+					
+					break_flag = 1;
+				}
+				else if ((hcs_cm >= 5) && (break_flag == 1))
+				{
+					DIO_TOGGLE(1);
+					//DIO_TOGGLE(2);
+					
+					#if MCP_ACTIVATED == 1
+					mcp_send_dataframe(MCP_TX(2), "B0", 3);
+					#endif
+					
+					break_flag = 0;
+				}
+				
+			}
 			//DIO_TOGGLE(1);
 			DIO_TOGGLE(2);
+// 			uart_write_str_mark(UART0, "cm: ", 0);
 			hcsr04_trigger();
 		}
+		
 
-#else
-		
-		char t_h[7]  = {0};
-				
-		DHT11_read(DHT11_data);
-			
-		itoa(DHT11_data[0], t_h, 10);
-		usart_write_str_mark(USART0, "H2O: ", 0);
-		usart_write_str_mark(USART0, t_h, 0);
-		usart_write(USART0, 13);
-		usart_write(USART0, 10);
-			
-		itoa(DHT11_data[2], t_h, 10);
-		usart_write_str_mark(USART0, "C: ", 0);
-		usart_write_str_mark(USART0, t_h, 0);
-		usart_write(USART0, 13);
-		usart_write(USART0, 10);
-				
-		mq2_result = MQ2_get_result();
-		itoa(mq2_result, t_h, 10);
-		usart_write_str_mark(USART0, "ppm: ", 0);
-		usart_write_str_mark(USART0, t_h, 0);
-		usart_write(USART0, 13);
-		usart_write(USART0, 10);
-			
-		if ( hcsr04_data_ready())
-		{
-			//usart_write_str_mark(USART0, "data_ready", 0);
-			hcs_cm = hcsr04_cm();
-			usart_write_str_mark(USART0, "cm: ", 0);
-			ltoa(hcs_cm , buff, 10);
-			usart_write_str_mark(USART0, buff, 0);
-			usart_write_str_mark(USART0, "\r\n", 0);
-			hcsr04_trigger();
-		}
-			
+#if 0
+		send_all_readings();	
 		_delay_ms(500);
-		
-			
-#endif		
-	
+#endif
+
 	}
 	
 			
 	
 }
+
+
 		 
 
 
 #if MCP_ACTIVATED == 1
-void store_dht() // stores dht information in the TX0 data
+uint8_t store_dht() // stores dht information in the TX0 data
 {
 	char DHT11_data[5] = {0};
 	char t_h[5]  = {0};
 	uint8_t buff[8];
 	
-	DHT11_read(DHT11_data);
+// 	for (int j = 0; j < 4; j++)
+// 	{
+// 		DIO_TOGGLE(1);
+// 		delay_msec(500);
+// 	}
 	
+	if (DHT11_read(DHT11_data) != SUCCESS) 
+	{
+		return SENSOR_ERROR;
+	}
+	
+// 	for (int j = 0; j < 9; j++)
+// 	{
+// 		DIO_TOGGLE(1);
+// 		delay_msec(300);
+// 	}
+	
+	//the humidity data
 	itoa(DHT11_data[0], t_h, 10);
 	
 	buff[0] = t_h[0];
 	buff[1] = t_h[1];
-
+	
+	//the temp data
 	itoa(DHT11_data[2], t_h, 10);
 	buff[2] = t_h[0];
 	buff[3] = t_h[1];
 	buff[4] = t_h[2];
 	buff[5] = 0;
-	mcp_tx_data(MCP_TX(0), DATA_FRAME, buff, 5);
-	//mcp_send_dataframe(MCP_TX(0), buff, 8);
+	mcp_set_tx_data(MCP_TX(0), DATA_FRAME, buff, 6);
+	
+	return SUCCESS;
 }
 
 void store_mq2()
@@ -250,9 +304,9 @@ void store_mq2()
 	uint8_t buff[8];
 	mq2_result = MQ2_get_result();
 	itoa(mq2_result, buff, 10);
-	//usart_write_str_mark(USART0, buff, 0);
+	//uart_write_str_mark(UART0, buff, 0);
 	
-	mcp_tx_data(MCP_TX(1), DATA_FRAME, buff, 8);
+	mcp_set_tx_data(MCP_TX(1), DATA_FRAME, buff, 8);
 }
 
 void alarm()
@@ -266,3 +320,45 @@ void alarm()
 }
 
 #endif
+
+void send_all_readings()
+{
+	uint8_t buff[5];
+	char DHT11_data[5] = {0};
+	char smoke[10]  = {0};
+	char t_h[7]  = {0};
+	uint16_t mq2_result = 0;
+	uint16_t hcs_cm = 0;
+	
+	DHT11_read(DHT11_data);
+	
+	itoa(DHT11_data[0], t_h, 10);
+	uart_send_str(UART0, "H2O: ");
+	uart_send_str(UART0, t_h);
+	uart_send(UART0, "\r", 1);
+	uart_send(UART0, "\n", 1);
+	
+	itoa(DHT11_data[2], t_h, 10);
+	uart_send_str(UART0, "C: ");
+	uart_send_str(UART0, t_h);
+	uart_send(UART0, "\r", 1);
+	uart_send(UART0, "\n", 1);
+	
+	mq2_result = MQ2_get_result();
+	itoa(mq2_result, t_h, 10);
+	uart_send_str(UART0, "ppm: ");
+	uart_send_str(UART0, t_h);
+	uart_send(UART0, "\r", 1);
+	uart_send(UART0, "\n", 1);
+	
+	if ( hcsr04_data_ready())
+	{
+		//uart_write_str_mark(UART0, "data_ready", 0);
+		hcs_cm = hcsr04_cm();
+		uart_send_str(UART0, "cm: ");
+		ltoa(hcs_cm , buff, 10);
+		uart_send_str(UART0, buff);
+		uart_send_str(UART0, "\r\n");
+		hcsr04_trigger();
+	}
+}

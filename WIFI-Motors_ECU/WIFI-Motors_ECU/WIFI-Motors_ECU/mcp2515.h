@@ -14,6 +14,14 @@
 #include "spi_api.h"
 
 
+//COMMON ERRORS
+#define TX0_FAIL 255
+#define TX1_FAIL 254
+#define TX2_FAIL 253
+#define RX0_FAIL 252
+#define RX1_FAIL 251
+/*****************************/
+
 #define UNUSED -1
 #define CLEARED 0 
 
@@ -209,10 +217,10 @@
 #define FILTER3_ID   0x056f
 #define FILTER3_TYPE SID
 
-#define FILTER4_ID   0x055f
+#define FILTER4_ID   CLEARED
 #define FILTER4_TYPE SID
 
-#define FILTER5_ID   0x054f
+#define FILTER5_ID   CLEARED
 #define FILTER5_TYPE SID
 
 
@@ -285,7 +293,9 @@ CONFIG_MODE
 
 
 /*
-rxnbf: RX_HI = high impedance ... RX_IN = input ... RX_INT = interrupt 
+rxnbf: RX_HI = high impedance 
+       RX_IN = input 
+	   RX_INT = interrupt 
 */ 
 void mcp_rx_pins (unint8_t rx0bf , unint8_t rx1bf);
 
@@ -293,7 +303,7 @@ void mcp_rx_pins (unint8_t rx0bf , unint8_t rx1bf);
 	RTSn = rts pin n as RTS function
 	NOTE: to set multiple pins in rts mode .. you can OR them (RTS0 | RTS1) 
 */
-void RTS_pins (unint8_t rts_pins);
+//void rts_pins (unint8_t rts_pins);
 
 /*
   tx_no    : 0 , 1 , 2
@@ -323,11 +333,11 @@ void mcp_en_ckout (unint8_t prescaler);
 
 void mcp_reset ();
 
-void mcp_read (unint8_t add, unint8_t * data, unint8_t num_bytes);
+void mcp_read_reg (unint8_t add, unint8_t * data, unint8_t num_bytes);
 
 void mcp_read_rx (unint8_t rx_no, unint8_t * data, unint8_t num_bytes);
 
-void mcp_write (unint8_t add, unint8_t * data, unint8_t num_bytes);
+void mcp_write_reg (unint8_t add, unint8_t * data, unint8_t num_bytes);
 
 void mcp_load_tx (unint8_t pos, unint8_t * data, unint8_t num_bytes);
 
@@ -342,31 +352,30 @@ void mcp_tx_trigger (unint8_t tx_no);
 
 unint8_t mcp_read_status ();
 
-unint8_t mcp_rx_status ();
+unint8_t mcp_get_rx_status ();
 
 void mcp_bit_modify (unint8_t add, unint8_t mask, unint8_t data);
 
-void mcp_init (); 
+uint8_t mcp_init (); 
 
 /*
 MCP_TX0
 MCP_TX1
 MCP_TX2
-
 you can't assign multiple tx together
 */
 void mcp_set_priority (unint8_t tx_no, unint8_t priority);
 
 /*
+The RTS command can be used to initiate message
+transmission for one or more of the transmit buffers.
 MCP_TX0
 MCP_TX1
 MCP_TX2
-
 you can point to multiple tx by performing OR between the terms ie. MCP_TX0 | MCP_TX1
-
 state:
-0 input pin
-1 rts pin
+		0 input pin
+		1 rts pin
 */
 void rts_pins (unint8_t pins, unint8_t state);
 
@@ -375,27 +384,27 @@ MCP_TX0
 MCP_TX1
 MCP_TX2
 */
-void mcp_tx_id (unint8_t tx_no, unint8_t id_type, unint32_t id);
+void mcp_set_tx_id (unint8_t tx_no, unint8_t id_type, unint32_t id);
 
 /*
 in the second parameter you either enter:
 DATA_FRAME 
 REMOTE_FRAME ( in this case the third segment is unused .. so you can pass NULL to it)
 */
-void mcp_tx_data(unint8_t tx_no, uint8_t d_r_frame, unint8_t * data, unint8_t d_size);
+void mcp_set_tx_data(unint8_t tx_no, uint8_t d_r_frame, unint8_t * data, unint8_t d_size);
 
-void mcp_rx_data(unint8_t rx_no, unint8_t * rx_buff);
+void mcp_get_rx_data(unint8_t rx_no, unint8_t * rx_buff);
 
 
 
 
 //MCP_MASK(n)
 //MCP_FILTER(n)
-void mcp_set_mask_filter (unint8_t m_f_add, unint8_t id_type, unint32_t id);
+void mcp_set_mask_or_filter (unint8_t m_f_addr, unint8_t id_type, unint32_t id);
 
 //CHANGED
-uint8_t mcp_rx_status ();
-uint8_t mcp_status ();
+uint8_t mcp_get_rx_status ();
+uint8_t mcp_get_status ();
 
 /*supported flags for the function
 RX0IF
@@ -425,12 +434,12 @@ void mcp_send_dataframe (uint8_t tx_no, uint8_t * data_buff, uint8_t size); // c
 void mcp_send_remoteframe (uint8_t tx_no, uint8_t size);
 uint8_t mcp_remote_handler (uint8_t rx_no, uint8_t id_type);
 
-uint8_t mcp_rx_status_frame (uint8_t rx_status_reg, uint8_t);
-uint8_t mcp_rx_status_rx (uint8_t rx_status_reg, uint8_t);
-uint8_t mcp_rx_status_filter (uint8_t rx_status_reg, uint8_t);
+uint8_t mcp_get_rx_status_frame (uint8_t rx_status_reg, uint8_t);
+uint8_t mcp_get_rx_status_rx (uint8_t rx_status_reg, uint8_t);
+uint8_t mcp_get_rx_status_filters (uint8_t rx_status_reg, uint8_t);
 
-uint8_t mcp_status_tx (uint8_t stat_reg, uint8_t );
-uint8_t mcp_status_rx (uint8_t stat_reg, uint8_t );
+uint8_t mcp_get_status_tx (uint8_t stat_reg, uint8_t );
+uint8_t mcp_get_status_rx (uint8_t stat_reg, uint8_t );
 
 
 #endif /* MCP2515_H_ */

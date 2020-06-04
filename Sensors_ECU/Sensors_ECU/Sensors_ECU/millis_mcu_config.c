@@ -73,7 +73,7 @@ bool millis(unint16_t t)
 		//initialize timer0 with 1024 pre_scaler and activate the timer mode
 		TCCR0 = 0x05;
 		#if (MILLIS_INTERRUPT == 1)
-		TIMSK = (1 << 0); //enable timer0 interrupt
+		TIMSK |= (1 << 0); //enable timer0 interrupt
 		//if the number of ovf is 1 meaning there is just the remaining ticks
 		//make TCNT0=265-REMAINING_TICKS;
 		//else TCNT=0

@@ -7,54 +7,55 @@
 
 #include "spi_api.h"
 
-void spi_send_str_mark(const unint8_t *Str, unint8_t mark)
+void spi_send(const uint8_t spi_num, const unint8_t *Str, const unint8_t size)
+{
+	unint8_t i = 0;
+	
+	while (i < size)
+	{
+		spi_exchange(spi_num, Str[i]);
+		i++;
+	}
+}
+
+//keep sending until you reach the marked byte (don't send it)
+void spi_send_until(const uint8_t spi_num, const unint8_t *Str, const unint8_t mark)
 {
 	unint8_t i = 0;
 	
 	while(Str[i] != mark)
 	{
-		spi_send(Str[i]);
+		spi_exchange(spi_num, Str[i]);
 		i++;
 	}
 	
 }
 
-void spi_send_str_size(const unint8_t *Str, unint8_t size)
+void spi_read(const uint8_t spi_num, unint8_t *Str, const unint8_t size)
 {
-	unint8_t i = 0;
+	unsigned char i = 0;
 	
 	while (i < size)
 	{
-		spi_send(Str[i]);
+		Str[i] = spi_exchange(spi_num, 0x00);
 		i++;
 	}
+	
 }
 
-void spi_read_str_mark(unint8_t *Str, unint8_t mark)
+//keep reading until you reach the marked byte (and read it too )
+void spi_read_until(const uint8_t spi_num, unint8_t *Str, const unint8_t mark)
 {
-	unsigned char i = 0;
+	uint8_t i = 0;
 	
 	do
 	{
-		Str[i] = spi_read();
+		Str[i] = spi_exchange(spi_num, 0x00);
 	}
 	while (Str[i++] != mark);
 	
-	//i--;  /*return back one step to the last cell where we put null*/
-	//Str[i] = '\0';
 }
 
 
-void spi_read_str_size(unint8_t *Str, unint8_t size)
-{
-	unsigned char i = 0;
-	
-	while (i < size)
-	{
-		Str[i] = spi_read();
-		i++;
-	}
-	
-}
 
 

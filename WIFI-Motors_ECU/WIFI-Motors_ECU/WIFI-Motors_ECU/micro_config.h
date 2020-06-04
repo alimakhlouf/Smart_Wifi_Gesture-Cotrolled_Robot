@@ -20,17 +20,12 @@
 
 #define ATMEGA32
 
+#define ERROR 0
+#define SUCCESS 1
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <stdlib.h>
-
-
-
-
-
-
-
-
 
 #endif /* MICRO_CONFIG_H_ */

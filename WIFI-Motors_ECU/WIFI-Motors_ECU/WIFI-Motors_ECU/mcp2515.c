@@ -12,9 +12,12 @@ inline void mcp_set_eid(unint32_t id);
 
 inline void  mcp_set_sid(unint16_t id);
 
-void mcp_init()
+uint8_t mcp_init()
 {
-	spi_init();
+	if (spi_init_master(SPI0, 2000000, SAMPLE_AT_RISE_E, HIGH_EDGE_LEAD, MSB_FIRST) == ERROR)
+	{
+		return ERROR;
+	}
 	
 	mcp_reset();
 	
@@ -36,41 +39,36 @@ void mcp_init()
 
 	mcp_bit_modify(CNF3, 0b01000111, (PS2_SEG - 1));
 	
-	
-	
-	
-
-	
 	#if (MASK0_ID != CLEARED)
-	mcp_set_mask_filter(MCP_MASK(0), MASK0_TYPE, MASK0_ID);
+	mcp_set_mask_or_filter(MCP_MASK(0), MASK0_TYPE, MASK0_ID);
 	#endif
 	
 	#if (MASK1_ID != CLEARED)
-	mcp_set_mask_filter(MCP_MASK(1), MASK1_TYPE, MASK1_ID);
+	mcp_set_mask_or_filter(MCP_MASK(1), MASK1_TYPE, MASK1_ID);
 	#endif
 	
 	#if (FILTER0_ID != CLEARED)
-	mcp_set_mask_filter(MCP_FILTER(0), FILTER0_TYPE, FILTER0_ID);
+	mcp_set_mask_or_filter(MCP_FILTER(0), FILTER0_TYPE, FILTER0_ID);
 	#endif
 	
 	#if (FILTER1_ID != CLEARED)
-	mcp_set_mask_filter(MCP_FILTER(1), FILTER1_TYPE, FILTER1_ID);
+	mcp_set_mask_or_filter(MCP_FILTER(1), FILTER1_TYPE, FILTER1_ID);
 	#endif
 	
 	#if (FILTER2_ID != CLEARED)
-	mcp_set_mask_filter(MCP_FILTER(2), FILTER2_TYPE, FILTER2_ID);
+	mcp_set_mask_or_filter(MCP_FILTER(2), FILTER2_TYPE, FILTER2_ID);
 	#endif
 	
 	#if (FILTER3_ID != CLEARED)
-	mcp_set_mask_filter(MCP_FILTER(3), FILTER3_TYPE, FILTER3_ID);
+	mcp_set_mask_or_filter(MCP_FILTER(3), FILTER3_TYPE, FILTER3_ID);
 	#endif
 	
 	#if (FILTER4_ID != CLEARED)
-	mcp_set_mask_filter(MCP_FILTER(4), FILTER4_TYPE, FILTER4_ID);
+	mcp_set_mask_or_filter(MCP_FILTER(4), FILTER4_TYPE, FILTER4_ID);
 	#endif
 	
 	#if (FILTER5_ID != CLEARED)
-	mcp_set_mask_filter(MCP_FILTER(5), FILTER5_TYPE, FILTER5_ID);
+	mcp_set_mask_or_filter(MCP_FILTER(5), FILTER5_TYPE, FILTER5_ID);
 	#endif
 	
 	
@@ -78,7 +76,7 @@ void mcp_init()
 	//CANCTRL = 0b01001000;  //loopback mode ... one shot mode
 	mcp_bit_modify(CANCTRL, 0b11111111, (MCP_OP_MODE << 5) | (ONE_SHOT << 3) | (MCP_CLOCKOUT << 2) | (MCP_CKOUT_PRE));
 	
-	
+	return SUCCESS;
 }
 
 
@@ -86,65 +84,67 @@ void mcp_reset()
 {
 	DIO_SET_VAL(SS, DIO_LOW);
 	
-	spi_send(MCP_RESET);
+	spi_exchange(SPI0, MCP_RESET);
 	DIO_SET_VAL(SS, DIO_HIGH);
 }
 
 
 
-void mcp_read(unint8_t add, unint8_t * data, unint8_t num_bytes)
+void mcp_read_reg(unint8_t add, unint8_t * data, unint8_t num_bytes)
 {
 	DIO_SET_VAL(SS, DIO_LOW);
-	spi_send(0b00000011);
-	spi_send(add);
+	spi_exchange(SPI0, 0b00000011);
+	spi_exchange(SPI0, add);
 	
 	if (num_bytes == 1)
 	{
-		data[0] = spi_read();
+		data[0] = spi_exchange(SPI0, 0x00);
 	}
 	else
 	{
-		spi_read_str_size(data, num_bytes);
+		spi_read(SPI0, data, num_bytes);
 	}
 
 	DIO_SET_VAL(SS, DIO_HIGH);
 }
 
+// module specific instructions for fast rx buffer reading (datasheet page 68 figure 12-3)  
 void mcp_read_rx(unint8_t pos, unint8_t * data,unint8_t num_bytes)
 {
 	DIO_SET_VAL(SS, DIO_LOW);
-	spi_send(0b10010000 | pos);
+	spi_exchange(SPI0, 0b10010000 | pos);
 	
-	spi_read_str_size(data, num_bytes);
+	spi_read(SPI0, data, num_bytes);
 
 	DIO_SET_VAL(SS, DIO_HIGH);
 }
 
-void mcp_write(unint8_t add, unint8_t * data, unint8_t num_bytes)
+void mcp_write_reg(unint8_t add, unint8_t * data, unint8_t num_bytes)
 {
 	DIO_SET_VAL(SS, DIO_LOW);
-	spi_send(0b00000010);
-	spi_send(add);
+	spi_exchange(SPI0, 0b00000010);
+	spi_exchange(SPI0, add);
 	
-	spi_send_str_size(data, num_bytes);
+	spi_send(SPI0, data, num_bytes);
 	
 	DIO_SET_VAL(SS, DIO_HIGH);
 }
 
+// module specific instructions for fast tx buffer loading (datasheet page 69 figure 12-5)  
 void mcp_load_tx(unint8_t pos, unint8_t * data, unint8_t num_bytes)
 {
 	DIO_SET_VAL(SS, DIO_LOW);
-	spi_send(0b01000000 | pos);
-	spi_send_str_size(data, num_bytes);
+	spi_exchange(SPI0, 0b01000000 | pos);
+	spi_send(SPI0, data, num_bytes);
 	DIO_SET_VAL(SS, DIO_HIGH);
 }
 
 
-void mcp_set_mask_filter(unint8_t m_f_no, unint8_t id_type, unint32_t id)
+void mcp_set_mask_or_filter(unint8_t m_f_addr, unint8_t id_type, unint32_t id)
 {
 	DIO_SET_VAL(SS, DIO_LOW);
-	spi_send(0b00000010);
-	spi_send(m_f_no);
+	spi_exchange(SPI0, 0b00000010);
+	spi_exchange(SPI0, m_f_addr);
 
 	if (id_type == 1) //if extended ID
 	{
@@ -159,7 +159,7 @@ void mcp_set_mask_filter(unint8_t m_f_no, unint8_t id_type, unint32_t id)
 }
 
 
-void mcp_tx_id(unint8_t tx_no, unint8_t id_type, unint32_t id)
+void mcp_set_tx_id(unint8_t tx_no, unint8_t id_type, unint32_t id)
 {
 	//unint8_t var;
 	
@@ -167,8 +167,8 @@ void mcp_tx_id(unint8_t tx_no, unint8_t id_type, unint32_t id)
 
 	if (id_type == 1) //if extended ID
 	{
-		spi_send(0b00000010);
-		spi_send((TXB0SIDH + ((tx_no >> 1) << 4)));
+		spi_exchange(SPI0, 0b00000010);
+		spi_exchange(SPI0, (TXB0SIDH + ((tx_no >> 1) << 4)));
 		mcp_set_eid(id);		
 	}
 	else // if standard ID
@@ -179,7 +179,7 @@ void mcp_tx_id(unint8_t tx_no, unint8_t id_type, unint32_t id)
 			tx_no >>= 1;
 		}
 
-		spi_send(0b01000000 | tx_no);
+		spi_exchange(SPI0, 0b01000000 | tx_no);
 		mcp_set_sid(id);
 
 	}
@@ -191,45 +191,45 @@ void mcp_tx_id(unint8_t tx_no, unint8_t id_type, unint32_t id)
 inline void mcp_set_eid(unint32_t id)
 {
 
-	spi_send((id >> 21));
-	spi_send((((id >> 13) & 0b11100000) | (1 << 3) | ((id >> 16) & 0b00000011)));
-	spi_send((id >> 8));
-	spi_send(id);
+	spi_exchange(SPI0, (id >> 21));
+	spi_exchange(SPI0, (((id >> 13) & 0b11100000) | (1 << 3) | ((id >> 16) & 0b00000011)));
+	spi_exchange(SPI0, (id >> 8));
+	spi_exchange(SPI0, id);
 }
 
 inline void mcp_set_sid(unint16_t id)
 {
-	spi_send((id >> 3));
-	spi_send(((id << 5)));
+	spi_exchange(SPI0, (id >> 3));
+	spi_exchange(SPI0, ((id << 5)));
 }
 
 //void mcp_filter(unint8_t filter_no
 
-void mcp_rx_data(unint8_t rx_no, unint8_t * rx_buff)
+void mcp_get_rx_data(unint8_t rx_no, unint8_t * rx_buff)
 {
 	unint8_t data_size = 0;
 	
 	DIO_SET_VAL(SS, DIO_LOW);
-	spi_send(0b00000011);
-	spi_send(RXB0DLC + (rx_no << 4));
-	data_size = spi_read();
+	spi_exchange(SPI0, 0b00000011);
+	spi_exchange(SPI0, RXB0DLC + (rx_no << 4));
+	data_size = spi_exchange(SPI0, 0x00);
 	//data_size = 8;
-	spi_read_str_size(rx_buff, (data_size & 0x0f));
+	spi_read(SPI0, rx_buff, (data_size & 0x0f));
 	DIO_SET_VAL(SS, DIO_HIGH);
 }
 
 
-void mcp_tx_data(unint8_t tx_no, uint8_t d_r_frame, unint8_t * data, unint8_t d_size)
+void mcp_set_tx_data(unint8_t tx_no, uint8_t d_r_frame, unint8_t * data, unint8_t d_size)
 {
 	DIO_SET_VAL(SS, DIO_LOW);
 	//DIO_SET_VAL(SS, DIO_LOW);
-	spi_send(0b00000010);
-	spi_send(TXB0DLC + ((tx_no >> 1) << 4));
-	spi_send(d_size | (d_r_frame << 6));	
+	spi_exchange(SPI0, 0b00000010);
+	spi_exchange(SPI0, TXB0DLC + ((tx_no >> 1) << 4));
+	spi_exchange(SPI0, d_size | (d_r_frame << 6));	
 	
 	if (d_r_frame == 0) //if the frame is A datA frame .. the store the bytes into the datA segment
 	{
-		spi_send_str_size(data, d_size);
+		spi_send(SPI0, data, d_size);
 	}	
 	
 	DIO_SET_VAL(SS, DIO_HIGH);
@@ -240,7 +240,7 @@ void mcp_tx_trigger(unint8_t tx_no)
 {
 	DIO_SET_VAL(SS, DIO_LOW);
 	//DIO_SET_VAL(SS, DIO_LOW);	
-	spi_send(0b10000000 | tx_no);		
+	spi_exchange(SPI0, 0b10000000 | tx_no);		
 	DIO_SET_VAL(SS, DIO_HIGH);
 	//SPI_PORT|= (1 << SS);
 	delay_msec(5);
@@ -252,10 +252,10 @@ void mcp_bit_modify(unint8_t add, unint8_t mask, unint8_t data)
 {
 	DIO_SET_VAL(SS, DIO_LOW);
 	//DIO_SET_VAL(SS, DIO_LOW);
-	spi_send(BIT_MODIFY);
-	spi_send(add);
-	spi_send(mask);
-	spi_send(data);
+	spi_exchange(SPI0, BIT_MODIFY);
+	spi_exchange(SPI0, add);
+	spi_exchange(SPI0, mask);
+	spi_exchange(SPI0, data);
 	DIO_SET_VAL(SS, DIO_HIGH);
 	//SPI_PORT|= (1 << SS);
 }
@@ -288,13 +288,13 @@ void mcp_en_ckout(unint8_t prescaler)
 
 
 
-uint8_t mcp_status()
+uint8_t mcp_get_status()
 {
 	uint8_t data;
 	
 	DIO_SET_VAL(SS, DIO_LOW);
-	spi_send(0b10100000);
-	data = spi_read();
+	spi_exchange(SPI0, 0b10100000);
+	data = spi_exchange(SPI0, 0x00);
 	DIO_SET_VAL(SS, DIO_HIGH);
 
 	return data;
@@ -335,31 +335,31 @@ uint8_t mcp_check_flag(uint8_t flag)
 	
 	if (flag < 8)
 	{
-		state = BIT_IS_SET(mcp_status(), flag);
+		state = BIT_IS_SET(mcp_get_status(), flag);
 	}
 	else if (flag < 16)//from CANTINF
 	{
-		mcp_read(CANTINF, &data, 1);
+		mcp_read_reg(CANTINF, &data, 1);
 		state = BIT_IS_SET(data, (flag - 8));
 	}
 	else if (flag < 24) // TXB0CTRL
 	{
-		mcp_read(TXB0CTRL, &data, 1);
+		mcp_read_reg(TXB0CTRL, &data, 1);
 		state = BIT_IS_SET(data, (flag - 16));
 	}
 	else if (flag < 32)// TXB1CTRL
 	{
-		mcp_read(TXB1CTRL, &data, 1);
+		mcp_read_reg(TXB1CTRL, &data, 1);
 		state = BIT_IS_SET(data, (flag - 24));
 	}
 	else if (flag < 40)// TXB2CTRL
 	{
-		mcp_read(TXB2CTRL, &data, 1);
+		mcp_read_reg(TXB2CTRL, &data, 1);
 		state = BIT_IS_SET(data, (flag - 32));
 	}
 	else //EFLG flags
 	{
-		mcp_read(EFLG, &data, 1);
+		mcp_read_reg(EFLG, &data, 1);
 		state = BIT_IS_SET(data, (flag - 40));
 	}
 	
@@ -401,13 +401,13 @@ void mcp_clear_flag (uint8_t flag)
 
 void mcp_send_dataframe(uint8_t tx_no, uint8_t * data_buff, uint8_t size) // could be inline
 {
-	mcp_tx_data(tx_no, DATA_FRAME, data_buff, size);
+	mcp_set_tx_data(tx_no, DATA_FRAME, data_buff, size);
 	mcp_tx_trigger(tx_no);
 }
 
 void mcp_send_remoteframe(uint8_t tx_no, uint8_t size)
 {
-	mcp_tx_data(tx_no, REMOTE_FRAME, NULL, size);
+	mcp_set_tx_data(tx_no, REMOTE_FRAME, NULL, size);
 	mcp_tx_trigger(tx_no);
 }
  
@@ -419,13 +419,13 @@ uint8_t mcp_remote_handler(uint8_t rx_no, uint8_t id_type)
 	int8_t  tx_count = 0;
 	int8_t  id_count = 0;
 	
- 	mcp_read(RXBNSIDH(rx_no), rx_id, (2 << id_type));
+ 	mcp_read_reg(RXBNSIDH(rx_no), rx_id, (2 << id_type));
 	 
 	 rx_id[1] &= ~(1 << 4);
 		
 	for (tx_count = 0; (tx_count < 3); tx_count++)
 	{
-		mcp_read(TXBNSIDH(tx_count), tx_id, (2 << id_type));
+		mcp_read_reg(TXBNSIDH(tx_count), tx_id, (2 << id_type));
 		
 		for (id_count = 0; id_count < (2 << id_type); id_count++)
 		{
@@ -448,18 +448,18 @@ uint8_t mcp_remote_handler(uint8_t rx_no, uint8_t id_type)
 	return 0;
 }
 
-uint8_t mcp_rx_status()
+uint8_t mcp_get_rx_status()
 {
 	uint8_t data;
 	DIO_SET_VAL(SS, DIO_LOW);
-	spi_send(0b10110000);
-	data = spi_read();
+	spi_exchange(SPI0, 0b10110000);
+	data = spi_exchange(SPI0, 0x00);
 	DIO_SET_VAL(SS, DIO_HIGH);
 	
 	return data;
 }
 
-uint8_t mcp_rx_status_frame(uint8_t rx_status_reg, uint8_t specific_bits) //volatile
+uint8_t mcp_get_rx_status_frame(uint8_t rx_status_reg, uint8_t specific_bits) //volatile
 {	
 	return ((rx_status_reg & RX_STATUS_FRAME_BITS) == specific_bits);
 }
@@ -470,18 +470,18 @@ uint8_t mcp_rx_status_rx(uint8_t rx_status_reg, uint8_t specific_bits) //volatil
 	return temp == specific_bits;
 }
 
-uint8_t mcp_rx_status_filter(uint8_t rx_status_reg, uint8_t specific_bits) // volatile
+uint8_t mcp_get_rx_status_filters(uint8_t rx_status_reg, uint8_t specific_bits) // volatile
 {
 	return ((rx_status_reg & RX_STATUS_RXF_BITS) == specific_bits);
 }
 
-uint8_t mcp_status_rx(uint8_t stat_reg, uint8_t specific_bits) //volatile
+uint8_t mcp_get_status_rx(uint8_t stat_reg, uint8_t specific_bits) //volatile
 {
 	uint8_t temp = stat_reg & ((specific_bits == MCP_STAT_NO_RX)? MCP_STAT_BOTH_RX : specific_bits);
 	return temp == specific_bits;
 }
 
-uint8_t mcp_status_tx(uint8_t stat_reg, uint8_t specific_bits) // volatile
+uint8_t mcp_get_status_tx(uint8_t stat_reg, uint8_t specific_bits) // volatile
 {
 	uint8_t temp = stat_reg & ((specific_bits == MCP_STAT_NO_TX)? MCP_STAT_BOTH_TX : specific_bits);
 	return temp == specific_bits;	
