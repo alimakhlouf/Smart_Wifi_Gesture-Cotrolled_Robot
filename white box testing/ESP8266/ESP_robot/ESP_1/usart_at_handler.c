@@ -122,7 +122,7 @@ unint8_t get_string(char * dest_str, char * beforestr, char * afterstr, unint16_
 {
 	unint8_t get_result = FALSE;
 	
-	if (check_string(beforestr, delay_time))
+	if (check_strings(delay_time, 1, beforestr))
 	{
 		
 		if (get_str_until(dest_str, afterstr, delay_time))

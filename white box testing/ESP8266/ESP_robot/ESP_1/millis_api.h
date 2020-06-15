@@ -21,7 +21,7 @@
  * 1 INTERRUPT
  */
 
-#define MILLIS_INTERRUPT 1
+#define MILLIS_INTERRUPT 0
 
 /* ----------------------------------------------------------------------------
 [Function Name] : millis

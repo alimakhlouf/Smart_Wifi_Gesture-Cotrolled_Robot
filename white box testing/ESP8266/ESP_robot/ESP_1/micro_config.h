@@ -22,6 +22,7 @@
 
 #define ERROR 0
 #define SUCCESS 1
+#define PARAMETER_ERROR 200
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
